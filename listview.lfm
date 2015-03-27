@@ -1,7 +1,7 @@
 object ListForm: TListForm
   Left = 712
   Height = 611
-  Top = 158
+  Top = 123
   Width = 543
   ClientHeight = 611
   ClientWidth = 543

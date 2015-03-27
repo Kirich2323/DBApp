@@ -19,6 +19,7 @@ type
     SQLQuery: TSQLQuery;
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
+    procedure CreateSql();
   public
     TableTag: integer;
   end;
@@ -28,6 +29,33 @@ var
 
 implementation
 
+procedure TListForm.CreateSql;
+var
+  i: integer;
+  s: string;
+begin
+  SQLQuery.SQL.Text := 'SELECT ';
+  for i := 0 to High(TableArray[TableTag].Fields) do
+  begin
+    if i <= (High(TableArray[TableTag].Fields) - 1) then
+      SQLQuery.SQL.Add(TableArray[TableTag].Fields[i].Table + '.' +
+        TableArray[TableTag].Fields[i].Name + ', ')
+    else
+      SQLQuery.SQL.Add(TableArray[TableTag].Fields[i].Table +
+        '.' + TableArray[TableTag].Fields[i].Name);
+  end;
+  SQLQuery.SQl.Add('From ');
+  SQLQuery.SQL.Add(TableArray[TableTag].Name);
+  if length(TableArray[TableTag].RefefenceFields) > 0 then
+    for i := 0 to high(TableArray[TableTag].RefefenceFields) do
+      SQLQuery.SQL.AddText(('inner join ' +
+        TableArray[TableTag].RefefenceFields[i].FromTable + ' on ' +
+        TableArray[TableTag].Name + '.' +
+        TableArray[TableTag].RefefenceFields[i].FiledName + ' = ' +
+        TableArray[TableTag].RefefenceFields[i].FromTable + '.' +
+        TableArray[TableTag].RefefenceFields[i].FiledName));
+end;
+
 {$R *.lfm}
 
 { TListForm }
@@ -35,9 +63,9 @@ procedure TListForm.FormShow(Sender: TObject);
 var
   i: integer;
 begin
-  SQLQuery.SQL.Add(TableArray[TableTag].Name);
+  CreateSql;
   SQLQuery.Open;
-  for i := 0 to (DBGrid.Columns.Count - 1) do
+  for i := 0 to high(TableArray[TableTag].Fields) do
   begin
     DBGrid.Columns.Items[i].FieldName := TableArray[TableTag].Fields[i].Name;
     DBGrid.Columns.Items[i].Title.Caption := TableArray[TableTag].Fields[i].Caption;
@@ -55,4 +83,3 @@ end;
 initialization
 
 end.
-

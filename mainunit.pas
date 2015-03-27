@@ -24,10 +24,10 @@ type
     procedure BrowseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure ListClick(Sender: TObject);
-    procedure MenuItem1Click(Sender: TObject);
+    procedure MenuItemClick(Sender: TObject);
     procedure QuitClick(Sender: TObject);
   private
-    reference: TMenuItem;
+    Reference: TMenuItem;
     FormArray: array of TListForm;
     procedure CreateListReference();
   end;
@@ -51,30 +51,29 @@ var
 begin
   for i := 0 to High(TableArray) do
   begin
-    reference := TMenuItem.Create(Reference);
-    List.Add(reference);
-    reference.Visible := True;
-    reference.Caption := TableArray[i].Caption;
-    reference.Tag := i;
-    reference.OnClick := @MenuItem1Click;
-    setlength(FormArray, Length(FormArray) + 1);
-    setLength(isFormCreated, length(isFormCreated) + 1);
+    Reference := TMenuItem.Create(Reference);
+    List.Add(Reference);
+    Reference.Visible := True;
+    Reference.Caption := TableArray[i].Caption;
+    Reference.Tag := i;
+    Reference.OnClick := @MenuItemClick;
+    Setlength(FormArray, Length(FormArray) + 1);
+    SetLength(IsFormCreated, length(IsFormCreated) + 1);
   end;
 end;
 
-procedure TMainForm.MenuItem1Click(Sender: TObject);
+procedure TMainForm.MenuItemClick(Sender: TObject);
 var
-  index: integer;
+  Index: integer;
 begin
-  index := TMenuItem(Sender).Tag;
+  Index := TMenuItem(Sender).Tag;
   if not TMenuItem(Sender).Checked then
   begin
-    Application.CreateForm(TListForm, FormArray[index]);
-    //FormArray[index].OnClose := @FormClose;
-    FormArray[index].Caption :=
-      TableArray[index].Caption;
-    FormArray[index].TableTag := TMenuItem(Sender).Tag;
-    FormArray[index].Show;
+    Application.CreateForm(TListForm, FormArray[Index]);
+    FormArray[Index].Caption :=
+      TableArray[Index].Caption;
+    FormArray[Index].TableTag := TMenuItem(Sender).Tag;
+    FormArray[Index].Show;
     isFormCreated[TMenuItem(Sender).Tag] := True;
   end
   else
@@ -121,7 +120,6 @@ begin
   end
   else
     Appinfo.ShowOnTop;
-
 end;
 
 initialization

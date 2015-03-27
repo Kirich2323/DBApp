@@ -1,7 +1,7 @@
 object AppInfo: TAppInfo
-  Left = 517
+  Left = 326
   Height = 340
-  Top = 309
+  Top = 348
   Width = 267
   Caption = 'О программе'
   ClientHeight = 340
@@ -41,7 +41,6 @@ object AppInfo: TAppInfo
     Font.Height = -15
     ParentColor = False
     ParentFont = False
-    OnClick = Professor_txtClick
   end
   object Year_txt: TLabel
     Left = 112
