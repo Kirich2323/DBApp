@@ -4,12 +4,13 @@ program project1;
 
 uses {$IFDEF UNIX} {$IFDEF UseCThreads}
   cthreads, {$ENDIF} {$ENDIF}
-  Interfaces, // this includes the LCL widgetset
+  Interfaces,
   Forms,
   MainUnit,
   DataUnit,
   Listview,
-  MetaData, AboutApp { you can add units after this };
+  MetaData,
+  AboutApp;
 
 {$R *.res}
 

@@ -1,10 +1,10 @@
 object ListForm: TListForm
-  Left = 363
-  Height = 581
-  Top = 352
-  Width = 545
-  ClientHeight = 0
-  ClientWidth = 0
+  Left = 712
+  Height = 611
+  Top = 158
+  Width = 543
+  ClientHeight = 611
+  ClientWidth = 543
   OnClose = FormClose
   OnShow = FormShow
   LCLVersion = '1.2.4.0'
@@ -16,9 +16,9 @@ object ListForm: TListForm
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 15
-    Height = 0
+    Height = 546
     Top = 15
-    Width = 0
+    Width = 513
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 15
     BorderSpacing.Top = 15
@@ -33,9 +33,9 @@ object ListForm: TListForm
   object DBNavigator1: TDBNavigator
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
-    Left = -120
+    Left = 138
     Height = 25
-    Top = -40
+    Top = 571
     Width = 241
     Anchors = [akBottom]
     BevelOuter = bvNone

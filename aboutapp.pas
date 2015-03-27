@@ -14,8 +14,11 @@ type
   TAppInfo = class(TForm)
     Close_btn: TButton;
     Developer_txt: TLabel;
+    Professor_txt: TLabel;
+    Year_txt: TLabel;
     procedure Close_btnClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
+    procedure Professor_txtClick(Sender: TObject);
   end;
 
 var
@@ -36,6 +39,11 @@ end;
 procedure TAppInfo.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
   CloseAction := caFree;
+end;
+
+procedure TAppInfo.Professor_txtClick(Sender: TObject);
+begin
+
 end;
 
 end.
