@@ -1,0 +1,35 @@
+object AppInfo: TAppInfo
+  Left = 372
+  Height = 340
+  Top = 318
+  Width = 267
+  Caption = 'О программе'
+  ClientHeight = 340
+  ClientWidth = 267
+  Constraints.MaxHeight = 340
+  Constraints.MaxWidth = 267
+  Constraints.MinHeight = 340
+  Constraints.MinWidth = 267
+  FormStyle = fsSystemStayOnTop
+  OnClose = FormClose
+  LCLVersion = '1.2.4.0'
+  object Developer_txt: TLabel
+    Left = 40
+    Height = 20
+    Top = 96
+    Width = 188
+    Caption = 'Разработчик: Вадим Кирпа'
+    Font.Height = -15
+    ParentColor = False
+    ParentFont = False
+  end
+  object Close_btn: TButton
+    Left = 88
+    Height = 25
+    Top = 224
+    Width = 75
+    Caption = 'Закрыть'
+    OnClick = Close_btnClick
+    TabOrder = 0
+  end
+end
