@@ -122,9 +122,9 @@ initialization
   with Ttable.RegisterTable('Pairs', 'Занятия') do
   begin
     AddField('Pairid', 'id', 'integer', 'Pairs', 30, False);
+    AddField('PairNumber', 'Номер занятия', 'integer', 'Pairs', 100, True);
     AddField('PairBegin', 'Начало занятия', 'varchar (100)', 'Pairs', 120, True);
     AddField('PairEnd', 'Окончание занятия', 'varchar (100)', 'Pairs', 120, True);
-    AddField('PairNumber', 'Номер занятия', 'integer', 'Pairs', 120, True);
   end;
 
   with Ttable.RegisterTable('WeekDays', 'Дни недели') do
@@ -145,6 +145,8 @@ initialization
     AddField('PairID', 'id Занятия', 'integer', 'Schedules', 65, False);
     AddReferenceField('Pairs', 'Pairid');
     AddField('PairNumber', 'Номер занятия', 'integer', 'Pairs', 120, True);
+    AddField('PairBegin', 'Начало занятия', 'varchar (100)', 'Pairs', 120, True);
+    AddField('PairEnd', 'Окончание занятия', 'varchar (100)', 'Pairs', 120, True);
     AddField('SubjectId', 'id Предмета', 'integer', 'Schedules', 80, False);
     AddReferenceField('Subjects', 'SubjectId');
     AddField('SubjectName', 'Наименование предмета', 'varchar (100)', 'Subjects',
@@ -182,7 +184,8 @@ initialization
     AddField('GroupNumber', 'Номер группы', 'varchar (100)', 'Groups', 100, True);
     AddField('SubjectId', 'id Предмета', 'integer', 'Group_Subjects', 80, False);
     AddReferenceField('Subjects', 'SubjectId');
-    AddReferenceField('Subjects', 'SubjectId');
+    AddField('SubjectName', 'Наименование предмета', 'varchar (100)', 'Subjects',
+      215, True);
   end;
 
   with Ttable.RegisterTable('EducActivities', 'Виды занятий') do
