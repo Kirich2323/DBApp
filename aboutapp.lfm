@@ -1,7 +1,7 @@
 object AppInfo: TAppInfo
-  Left = 303
+  Left = 950
   Height = 340
-  Top = 348
+  Top = 380
   Width = 267
   Caption = 'О программе'
   ClientHeight = 340

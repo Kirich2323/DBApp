@@ -1,7 +1,7 @@
 object DataBaseConnectionUnit: TDataBaseConnectionUnit
   OldCreateOrder = False
   Height = 151
-  HorizontalOffset = 1204
+  HorizontalOffset = 1920
   VerticalOffset = 306
   Width = 150
   object IBConnection: TIBConnection

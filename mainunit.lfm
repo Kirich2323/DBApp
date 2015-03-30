@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 171
+  Left = 774
   Height = 370
-  Top = 292
+  Top = 335
   Width = 343
   Caption = 'DataBaseApp'
   Menu = MainMenu

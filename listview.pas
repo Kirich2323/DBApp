@@ -46,14 +46,14 @@ begin
   end;
   SQLQuery.SQl.Add('From ');
   SQLQuery.SQL.Add(TableArray[TableTag].Name);
-  if length(TableArray[TableTag].RefefenceFields) > 0 then
+  if Length(TableArray[TableTag].RefefenceFields) > 0 then
     for i := 0 to high(TableArray[TableTag].RefefenceFields) do
       SQLQuery.SQL.AddText(('inner join ' +
         TableArray[TableTag].RefefenceFields[i].FromTable + ' on ' +
         TableArray[TableTag].Name + '.' +
-        TableArray[TableTag].RefefenceFields[i].FiledName + ' = ' +
-        TableArray[TableTag].RefefenceFields[i].FromTable + '.' +
-        TableArray[TableTag].RefefenceFields[i].FiledName));
+        TableArray[TableTag].RefefenceFields[i].LeftTablesField +
+        ' = ' + TableArray[TableTag].RefefenceFields[i].FromTable +
+        '.' + TableArray[TableTag].RefefenceFields[i].RightTablesField));
 end;
 
 {$R *.lfm}
