@@ -96,14 +96,11 @@ begin
   end;
 end;
 
-
 initialization
   with TTable.RegisterTable('Students', 'Студенты') do
   begin
-    addField('StudentID', 'id', 'integer', 'Students', 30, False);
     addField('StudentInitials', 'Фамилия Имя Отчество',
       'varchar (100)', 'Students', 220, True);
-    addField('Groupid', 'id Группы', 'integer', 'Students', 60, False);
     addField('GroupNumber', 'Номер группы', 'varchar (100)', 'Groups',
       100, True, True, 'Groupid', 'Groupid');
     addField('GroupName', 'Специальность', 'varchar (100)', 'Groups',
@@ -155,42 +152,32 @@ initialization
 
   with Ttable.RegisterTable('Schedules', 'Расписание') do
   begin
-    AddField('groupid', 'id Группы', 'integer', 'Schedules', 65, False);
     AddField('GroupNumber', 'Номер группы', 'varchar (100)', 'Groups',
       100, True, True, 'GroupId', 'GroupId');
 
-    AddField('WeekDayId', 'id Дня недели', 'integer', 'Schedules', 85, False);
     AddField('WeekDayName', 'День недели', 'varchar (100)', 'WeekDays', 80,
       True, True, 'WeekDayId', 'WeekDayId');
 
-    AddField('PairID', 'id Занятия', 'integer', 'Schedules', 65, False);
     AddField('PairNumber', 'Номер занятия', 'integer', 'Pairs', 120,
       True, True, 'PairId', 'PairId');
     AddField('PairBegin', 'Начало занятия', 'varchar (100)', 'Pairs', 120, True);
     AddField('PairEnd', 'Окончание занятия', 'varchar (100)', 'Pairs', 120, True);
 
-    AddField('SubjectId', 'id Предмета', 'integer', 'Schedules', 80, False);
     AddField('SubjectName', 'Наименование предмета', 'varchar (100)', 'Subjects',
       215, True, True, 'SubjectId', 'SubjectId');
 
-    AddField('EducId', 'id Вида занятия', 'integer', 'Schedules', 100, False);
     AddField('EducName', 'Вид занятия', 'varchar (100)', 'EducActivities', 90,
       True, True, 'EducId', 'EducId');
 
-    AddField('TeacherId', 'id Преподавателя', 'integer', 'Schedules', 105, False);
     AddField('TeacherInitials', 'Фамилия Имя Отчество',
       'varchar (100)', 'Teachers', 230, True, True, 'TeacherId', 'TeacherId');
 
-    AddField('AudienceId', 'id Аудитории', 'integer', 'Schedules', 80, False);
     AddField('AudienceNumber', 'Номер Аудитории', 'varchar (100)', 'Audiences',
       150, True, True, 'AudienceId', 'AudienceId');
   end;
 
   with Ttable.RegisterTable('Teachers_Subjects', 'Предметы преподавателей') do
   begin
-    AddField('TeacherId', 'id Преподавателя', 'integer', 'Teachers_Subjects',
-      105, False);
-    AddField('SubjectId', 'id Предмета', 'integer', 'Teachers_Subjects', 80, False);
     AddField('TeacherInitials', 'Фамилия Имя Отчество',
       'varchar (100)', 'Teachers', 230, True, True, 'TeacherId', 'TeacherId');
     AddField('SubjectName', 'Наименование предмета', 'varchar (100)', 'Subjects',
@@ -199,10 +186,8 @@ initialization
 
   with Ttable.RegisterTable('Group_Subjects', 'Предметы групп') do
   begin
-    AddField('groupid', 'id Группы', 'integer', 'Group_Subjects', 65, False);
     AddField('GroupNumber', 'Номер группы', 'varchar (100)', 'Groups',
       100, True, True, 'GroupId', 'GroupId');
-    AddField('SubjectId', 'id Предмета', 'integer', 'Group_Subjects', 80, False);
     AddField('SubjectName', 'Наименование предмета', 'varchar (100)', 'Subjects',
       215, True, True, 'SubjectId', 'SubjectId');
   end;
