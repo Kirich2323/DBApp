@@ -10,7 +10,8 @@ uses {$IFDEF UNIX} {$IFDEF UseCThreads}
   DataUnit,
   Listview,
   MetaData,
-  AboutApp;
+  AboutApp,
+  SQLQueryCreation;
 
 {$R *.res}
 
