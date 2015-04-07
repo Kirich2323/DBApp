@@ -1,27 +1,27 @@
 object ListForm: TListForm
-  Left = 242
-  Height = 611
-  Top = 259
-  Width = 543
-  ClientHeight = 611
-  ClientWidth = 543
+  Left = 129
+  Height = 547
+  Top = 397
+  Width = 816
+  ClientHeight = 547
+  ClientWidth = 816
   OnClose = FormClose
   OnShow = FormShow
   LCLVersion = '1.2.4.0'
   object DBGrid: TDBGrid
-    AnchorSideLeft.Control = Owner
-    AnchorSideTop.Control = Owner
+    AnchorSideLeft.Control = Filter_panel
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = Panel
+    AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
-    Left = 15
-    Height = 546
-    Top = 15
-    Width = 513
+    Left = 140
+    Height = 447
+    Top = 50
+    Width = 661
     Anchors = [akTop, akLeft, akRight, akBottom]
-    BorderSpacing.Left = 15
-    BorderSpacing.Top = 15
     BorderSpacing.Right = 15
     BorderSpacing.Bottom = 50
     Color = clWindow
@@ -29,16 +29,23 @@ object ListForm: TListForm
     DataSource = DataSource
     ParentFont = False
     TabOrder = 0
+    OnTitleClick = DBGridTitleClick
   end
   object DBNavigator1: TDBNavigator
+    AnchorSideLeft.Control = Filter_panel
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
-    Left = 138
+    Left = 200
     Height = 25
-    Top = 571
-    Width = 241
-    Anchors = [akBottom]
+    Top = 507
+    Width = 556
+    Anchors = [akLeft, akRight, akBottom]
     BevelOuter = bvNone
+    BorderSpacing.Left = 60
+    BorderSpacing.Right = 60
     BorderSpacing.Bottom = 15
     ChildSizing.EnlargeHorizontal = crsScaleChilds
     ChildSizing.EnlargeVertical = crsScaleChilds
@@ -47,11 +54,59 @@ object ListForm: TListForm
     ChildSizing.Layout = cclLeftToRightThenTopToBottom
     ChildSizing.ControlsPerLine = 100
     ClientHeight = 25
-    ClientWidth = 241
+    ClientWidth = 556
     DataSource = DataSource
     Options = []
     TabOrder = 1
     VisibleButtons = [nbFirst, nbPrior, nbNext, nbLast]
+  end
+  object Filter_panel: TPanel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Panel
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Panel
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 0
+    Height = 497
+    Top = 50
+    Width = 140
+    Anchors = [akTop, akLeft, akBottom]
+    ClientHeight = 497
+    ClientWidth = 140
+    TabOrder = 2
+    object AddFilter_btn: TButton
+      Left = 8
+      Height = 25
+      Top = 8
+      Width = 115
+      Caption = 'Добавить фильтер'
+      TabOrder = 0
+    end
+  end
+  object Panel: TPanel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = DBGrid
+    Left = 0
+    Height = 50
+    Top = 0
+    Width = 816
+    Anchors = [akTop, akLeft, akRight]
+    TabOrder = 3
+  end
+  object Memo1: TMemo
+    Left = 16
+    Height = 394
+    Top = 136
+    Width = 784
+    Lines.Strings = (
+      'Memo1'
+    )
+    TabOrder = 4
   end
   object SQLQuery: TSQLQuery
     FieldDefs = <>
