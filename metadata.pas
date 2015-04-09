@@ -109,35 +109,35 @@ initialization
 
   with Ttable.RegisterTable('Groups', 'Группы') do
   begin
-    addField('Groupid', 'id', 'integer', 'Groups', 30, False);
-    addField('GroupNumber', 'Номер группы', 'varchar (100)', 'Groups', 100, True);
-    addField('GroupName', 'Специальность', 'varchar (100)', 'Groups', 250, True);
+    //AddField('Groupid', 'id', 'integer', 'Groups', 30, False);
+    AddField('GroupNumber', 'Номер группы', 'varchar (100)', 'Groups', 100, True);
+    AddField('GroupName', 'Специальность', 'varchar (100)', 'Groups', 250, True);
   end;
 
   with Ttable.RegisterTable('Teachers', 'Преподаватели') do
   begin
-    addField('Teacherid', 'id', 'integer', 'Teachers', 30, False);
+    //AddField('Teacherid', 'id', 'integer', 'Teachers', 30, False);
     AddField('TeacherInitials', 'Фамилия Имя Отчество',
       'varchar (100)', 'Teachers', 230, True);
   end;
 
   with TTable.RegisterTable('Subjects', 'Предметы') do
   begin
-    AddField('Subjectid', 'id', 'integer', 'Subjects', 30, False);
+    //AddField('Subjectid', 'id', 'integer', 'Subjects', 30, False);
     AddField('SubjectName', 'Наименование предмета', 'varchar (100)', 'Subjects',
       215, True);
   end;
 
   with Ttable.RegisterTable('Audiences', 'Аудитории') do
   begin
-    AddField('Audienceid', 'id', 'integer', 'Audiences', 30, False);
+    //AddField('Audienceid', 'id', 'integer', 'Audiences', 30, False);
     AddField('AudienceNumber', 'Номер Аудитории', 'varchar (100)', 'Audiences',
       150, True);
   end;
 
   with Ttable.RegisterTable('Pairs', 'Занятия') do
   begin
-    AddField('Pairid', 'id', 'integer', 'Pairs', 30, False);
+    //AddField('Pairid', 'id', 'integer', 'Pairs', 30, False);
     AddField('PairNumber', 'Номер занятия', 'integer', 'Pairs', 100, True);
     AddField('PairBegin', 'Начало занятия', 'varchar (100)', 'Pairs', 120, True);
     AddField('PairEnd', 'Окончание занятия', 'varchar (100)', 'Pairs', 120, True);
@@ -145,7 +145,7 @@ initialization
 
   with Ttable.RegisterTable('WeekDays', 'Дни недели') do
   begin
-    AddField('WeekDayid', 'id', 'integer', 'WeekDays', 30, False);
+    //AddField('WeekDayid', 'id', 'integer', 'WeekDays', 30, False);
     AddField('WeekDayName', 'День недели', 'varchar (100)', 'WeekDays', 80, True);
     AddField('WeekDayNumber', 'Номер дня недели', 'integer', 'WeekDays', 110, True);
   end;
