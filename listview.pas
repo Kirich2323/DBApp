@@ -6,8 +6,8 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, DBGrids,
-  DBCtrls, StdCtrls, Menus, ExtCtrls, PairSplitter, sqldb, DB, MetaData,
-  SQLQueryCreation, UMyPanel;
+  DBCtrls, StdCtrls, Menus, ExtCtrls, PairSplitter, Buttons, sqldb, DB,
+  MetaData, SQLQueryCreation, UMyPanel;
 
 type
 
@@ -15,7 +15,6 @@ type
 
   TListForm = class(TForm)
     AddFilter_btn: TButton;
-    AcceptFilters_btn: TButton;
     DeleteAllFilters_btn: TButton;
     DataSource: TDataSource;
     DBGrid: TDBGrid;
@@ -25,9 +24,11 @@ type
     PairSplitterTop: TPairSplitterSide;
     PairSplitterBottom: TPairSplitterSide;
     ScrollBox: TScrollBox;
+    AcceptFilters_spdbtn: TSpeedButton;
     SQLQuery: TSQLQuery;
     procedure AcceptFilters_btnClick(Sender: TObject);
     procedure AddFilter_btnClick(Sender: TObject);
+    procedure PanelItemChange(Sender: TObject);
     procedure DBGridTitleClick(Column: TColumn);
     procedure DeleteAllFilters_btnClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -35,6 +36,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure RemovePanel(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
+    procedure EditFields();
   private
     BaseSQLText: string;
     FilteredSQLText: string;
@@ -44,6 +46,7 @@ type
     FilterArray1: array of string;
     SortArray: array of SortField;
     FieldsArray: array of string;
+    DataTypeArray: array of TFieldType;
   end;
 
 var
@@ -53,6 +56,24 @@ implementation
 
 {$R *.lfm}
 { TListForm }
+
+procedure TListForm.EditFields();
+var
+  i: integer;
+begin
+  SQLQuery.Open;
+  for i := 0 to high(TableArray[TableTag].Fields) do
+  begin
+    with DBGrid.Columns.Items[i] do
+    begin
+      FieldName := TableArray[TableTag].Fields[i].Name;
+      Title.Caption := TableArray[TableTag].Fields[i].Caption;
+      Width := TableArray[TableTag].Fields[i].Width;
+      Visible := TableArray[TableTag].Fields[i].Visible;
+    end;
+  end;
+end;
+
 procedure TListForm.FormShow(Sender: TObject);
 var
   i: integer;
@@ -60,17 +81,14 @@ begin
   BaseSQLText := MainSQLQueryCreate(TableTag);
   SQLQuery.SQL.Text := BaseSQLText;
   FilteredSQLText := BaseSQLText;
-  SQLQuery.Open;
+  EditFields();
+  SetLength(DataTypeArray, Length(TableArray[TableTag].Fields));
   for i := 0 to high(TableArray[TableTag].Fields) do
-    with DBGrid.Columns.Items[i] do
-    begin
-      FieldName := TableArray[TableTag].Fields[i].Name;
-      Title.Caption := TableArray[TableTag].Fields[i].Caption;
-      Width := TableArray[TableTag].Fields[i].Width;
-      Visible := TableArray[TableTag].Fields[i].Visible;
-      SetLength(FieldsArray, Length(FieldsArray) + 1);
-      FieldsArray[High(FieldsArray)] := DBGrid.Columns.Items[i].FieldName;
-    end;
+  begin
+    SetLength(FieldsArray, Length(FieldsArray) + 1);
+    FieldsArray[High(FieldsArray)] := DBGrid.Columns.Items[i].FieldName;
+    DataTypeArray[i] := TableArray[TableTag].Fields[i].TypeOfData;
+  end;
 end;
 
 procedure TListForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -114,26 +132,16 @@ begin
     end;
   end;
   SQLQuery.SQL.Text := FilteredSQLText + SortSQLQueryCreate(SortArray);
-  SQLQuery.Close;                                                 //вынести
-  SQLQuery.Open;
+  SQLQuery.Close;
+  EditFields();
   with DBGrid.Columns do
   begin
-    for i := 0 to High(TableArray[TableTag].Fields) do
+    for j := 0 to High(SortArray) do
     begin
-      with Items[i] do
-      begin
-        FieldName := TableArray[TableTag].Fields[i].Name;
-        Title.Caption := TableArray[TableTag].Fields[i].Caption;
-        Width := TableArray[TableTag].Fields[i].Width;
-        Visible := TableArray[TableTag].Fields[i].Visible;
-      end;
-      for j := 0 to High(SortArray) do
-      begin
-        case SortArray[j].State of
-          0: Items[SortArray[j].Index].Title.ImageIndex := 1;
-          1: Items[SortArray[j].Index].Title.ImageIndex := 0;
-          2: Items[SortArray[j].Index].Title.ImageIndex := -1;
-        end;
+      case SortArray[j].State of
+        0: Items[SortArray[j].Index].Title.ImageIndex := 1;
+        1: Items[SortArray[j].Index].Title.ImageIndex := 0;
+        2: Items[SortArray[j].Index].Title.ImageIndex := -1;
       end;
     end;
   end;
@@ -143,6 +151,7 @@ procedure TListForm.DeleteAllFilters_btnClick(Sender: TObject);
 var
   i: integer;
 begin
+  AcceptFilters_spdbtn.Enabled := True;
   for i := 0 to High(FilterArray) do
     FilterArray[i].Free;
   SetLength(FilterArray, 0);
@@ -155,6 +164,7 @@ var
 begin
   SetLength(FilterArray, Length(FilterArray) + 1);
   FilterArray[High(FilterArray)] := TMyParentPanel.Create(self);
+  AcceptFilters_spdbtn.Enabled := True;
 
   with FilterArray[High(FilterArray)] do
   begin
@@ -170,6 +180,7 @@ begin
       for i := 0 to 1 do
         Items[i] := LogicOperatorsArray[i];
       ItemIndex := 0;
+      OnChange := @PanelItemChange;
     end;
 
     with FieldNames do
@@ -178,6 +189,7 @@ begin
       for i := 0 to (DBGrid.Columns.Count - 1) do
         Items[i] := DBGrid.Columns.Items[i].Title.Caption;
       ItemIndex := 0;
+      OnChange := @PanelItemChange;
     end;
 
     with Conditions do
@@ -186,6 +198,7 @@ begin
       for i := 0 to 4 do
         Items[i] := ConditionsArray[i];
       ItemIndex := 0;
+      OnChange := @PanelItemChange;
     end;
 
     with DeleteButton do
@@ -195,19 +208,45 @@ begin
       Tag := High(FilterArray);
     end;
 
-    Edit.Parent := FilterArray[High(FilterArray)];
+    with Edit do
+    begin
+      Parent := FilterArray[High(FilterArray)];
+      OnChange := @PanelItemChange;
+    end;
   end;
+end;
+
+procedure TListForm.PanelItemChange(Sender: TObject);
+begin
+  AcceptFilters_spdbtn.Enabled := True;
 end;
 
 procedure TListForm.AcceptFilters_btnClick(Sender: TObject);
 var
   i: integer;
+  Params: array of string;
 begin
   SQLQuery.SQL.Text := BaseSQLText;
   SQLQuery.SQL.Add(FilterSQLQueryCreate(FilterArray, FieldsArray));
   FilteredSQLText := SQLQuery.SQL.Text;
-  ShowMessage(SQLQuery.SQL.Text);
+  SetLength(Params, Length(FilterArray));
+  AcceptFilters_spdbtn.Enabled := False;
+
+  for i := 0 to High(FilterArray) do
+  begin
+    Params[i] := Format('Param%d', [i]);
+    SQLQuery.Params.CreateParam(DataTypeArray[FilterArray[i].FieldNames.ItemIndex],
+      Params[i], ptInput);
+    case DataTypeArray[FilterArray[i].FieldNames.ItemIndex] of
+      ftstring:
+        SQLQuery.ParamByName(Params[i]).AsString := FilterArray[i].Edit.Text;
+      ftinteger:
+        SQLQuery.ParamByName(Params[i]).AsInteger :=
+          StrToInt(FilterArray[i].Edit.Text);
+    end;
+  end;
   SQLQuery.Close;
+  ShowMessage(SQLQuery.SQL.Text);
   SQLQuery.Open;
   for i := 0 to high(TableArray[TableTag].Fields) do
   begin
@@ -227,6 +266,7 @@ procedure TListForm.RemovePanel(Sender: TObject; Button: TMouseButton;
 var
   j: integer;
 begin
+  AcceptFilters_spdbtn.Enabled := true;
   j := TButton(Sender).Tag;
   if j <> High(FilterArray) then
   begin
@@ -250,7 +290,6 @@ begin
     SetLength(FilterArray, Length(FilterArray) - 1);
   end;
 end;
-
 
 initialization
 

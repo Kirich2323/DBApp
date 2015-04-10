@@ -17,7 +17,7 @@ const
   ConditionsArray: array [0..4] of
     string = ('Равно', 'Больше', 'Меньше', 'Содержит', 'Начинается на');
   LogicOperatorsArray: array [0..1] of string = ('И', 'Или');
-  ConditionsArrayName: array [0..4] of string = ('=', '>', '<', 'like', 'like');
+  ConditionsArrayName: array [0..4] of string = ('=', '>', '<', 'CONTAINING', 'STARTING WITH');
   LogicOperatorsArrayName: array [0..1] of string = ('And', 'Or');
 
 function MainSQLQueryCreate(TableTag: integer): string;
@@ -91,15 +91,16 @@ var
 begin
   if Length(FilterArray) > 0 then
   begin
-    Query := ('Where ' + FieldsArray[FilterArray[0].FieldNames.ItemIndex] +
-      ' ' + ConditionsArrayName[FilterArray[0].Conditions.ItemIndex] +
-      ' ' + '''' + FilterArray[0].Edit.Text + '''' + ' ');
+    Query := Format('Where %s %s :param%d',
+      [FieldsArray[FilterArray[0].FieldNames.ItemIndex],
+      ConditionsArrayName[FilterArray[0].Conditions.ItemIndex], 0]);
+
     for i := 1 to High(FilterArray) do
     begin
-      Query += (LogicOperatorsArrayName[FilterArray[i].AndOrBox.ItemIndex] +
-        ' ' + FieldsArray[FilterArray[i].FieldNames.ItemIndex] + ' ' +
-        ConditionsArrayName[FilterArray[i].Conditions.ItemIndex] +
-        ' ' + '''' + FilterArray[i].Edit.Text + '''' + ' ');
+      Query += Format(' %s %s %s :param%d ',
+        [LogicOperatorsArrayName[FilterArray[i].AndOrBox.ItemIndex],
+        FieldsArray[FilterArray[i].FieldNames.ItemIndex],
+        ConditionsArrayName[FilterArray[i].Conditions.ItemIndex], i]);
     end;
   end;
   Result := Query;
