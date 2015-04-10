@@ -13,48 +13,61 @@ type
     State, Index: integer;
   end;
 
+  Condition = record
+    Caption, Name: string;
+  end;
+
 const
-  ConditionsArray: array [0..4] of
-    string = ('Равно', 'Больше', 'Меньше', 'Содержит', 'Начинается на');
   LogicOperatorsArray: array [0..1] of string = ('И', 'Или');
-  ConditionsArrayName: array [0..4] of string = ('=', '>', '<', 'CONTAINING', 'STARTING WITH');
   LogicOperatorsArrayName: array [0..1] of string = ('And', 'Or');
 
 function MainSQLQueryCreate(TableTag: integer): string;
 function SortSQLQueryCreate(SortArray: array of SortField): string;
-function FilterSQLQueryCreate(FilterArray: array of TMyParentPanel;
+function FilterSQLQueryCreate(FilterArray: array of TMyPanel;
   FieldsArray: array of string): string;
 
+var
+  Conditions: array of Condition;
+
 implementation
+
+procedure AddCondition(ConCap, ConName: string);
+begin
+  SetLength(Conditions, Length(Conditions) + 1);
+  with Conditions[High(Conditions)] do
+  begin
+    Caption := ConCap;
+    Name := ConName;
+  end;
+end;
 
 function MainSqlQueryCreate(TableTag: integer): string;
 var
   i: integer;
   s, Query: string;
+  CurTable: TTable;
 begin
+  CurTable := TableArray[TableTag];
   Query := 'Select ';
-  for i := 0 to High(TableArray[TableTag].Fields) do
+  for i := 0 to High(CurTable.Fields) do
   begin
-    Query += (TableArray[TableTag].Fields[i].Table + '.' +
-      TableArray[TableTag].Fields[i].Name + ', ');
-    if not (i <= (High(TableArray[TableTag].Fields) - 1)) then
+    Query += Format('%s.%s, ', [CurTable.Fields[i].Table, CurTable.Fields[i].Name]);
+    if not (i <= (High(CurTable.Fields) - 1)) then
     begin
       s := Query;
       Delete(s, Length(s) - 1, 1);
       Query := s;
     end;
   end;
-
   Query += ('From ');
-  Query += (TableArray[TableTag].Name);
-  if Length(TableArray[TableTag].RefefenceFields) > 0 then
-    for i := 0 to high(TableArray[TableTag].RefefenceFields) do
-      Query += ((' inner join ' +
-        TableArray[TableTag].RefefenceFields[i].FromTable + ' on ' +
-        TableArray[TableTag].Name + '.' +
-        TableArray[TableTag].RefefenceFields[i].LeftTablesField +
-        ' = ' + TableArray[TableTag].RefefenceFields[i].FromTable +
-        '.' + TableArray[TableTag].RefefenceFields[i].RightTablesField));
+  Query += (CurTable.Name);
+  if Length(CurTable.RefefenceFields) > 0 then
+    for i := 0 to high(CurTable.RefefenceFields) do
+      Query += Format(' inner join %s on %s.%s = %s.%s',
+        [CurTable.RefefenceFields[i].FromTable, CurTable.Name,
+        CurTable.RefefenceFields[i].LeftTablesField,
+        CurTable.RefefenceFields[i].FromTable,
+        CurTable.RefefenceFields[i].RightTablesField]);
   Result := Query;
 end;
 
@@ -83,7 +96,7 @@ begin
   Result := Query;
 end;
 
-function FilterSQLQueryCreate(FilterArray: array of TMyParentPanel;
+function FilterSQLQueryCreate(FilterArray: array of TMyPanel;
   FieldsArray: array of string): string;
 var
   i: integer;
@@ -92,18 +105,26 @@ begin
   if Length(FilterArray) > 0 then
   begin
     Query := Format('Where %s %s :param%d',
-      [FieldsArray[FilterArray[0].FieldNames.ItemIndex],
-      ConditionsArrayName[FilterArray[0].Conditions.ItemIndex], 0]);
-
+      [FieldsArray[FilterArray[0].FieldNamesBox.ItemIndex],
+      Conditions[FilterArray[0].ConditionsBox.ItemIndex].Name, 0]);
     for i := 1 to High(FilterArray) do
     begin
       Query += Format(' %s %s %s :param%d ',
         [LogicOperatorsArrayName[FilterArray[i].AndOrBox.ItemIndex],
-        FieldsArray[FilterArray[i].FieldNames.ItemIndex],
-        ConditionsArrayName[FilterArray[i].Conditions.ItemIndex], i]);
+        FieldsArray[FilterArray[i].FieldNamesBox.ItemIndex],
+        Conditions[FilterArray[i].ConditionsBox.ItemIndex].Name, i]);
     end;
   end;
   Result := Query;
 end;
+
+initialization
+  AddCondition('Равно', '=');
+  AddCondition('Больше', '>');
+  AddCondition('Меньше', '<');
+  AddCondition('Содержит', 'CONTAINING');
+  AddCondition('Не содержит', 'NOT CONTAINING');
+  AddCondition('Начинается с', 'STARTING WITH');
+
 
 end.

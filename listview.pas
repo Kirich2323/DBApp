@@ -32,7 +32,6 @@ type
     procedure DBGridTitleClick(Column: TColumn);
     procedure DeleteAllFilters_btnClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
-    procedure FormResize(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure RemovePanel(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
@@ -42,8 +41,7 @@ type
     FilteredSQLText: string;
   public
     TableTag: integer;
-    FilterArray: array of TMyParentPanel;
-    FilterArray1: array of string;
+    FilterArray: array of TMyPanel;
     SortArray: array of SortField;
     FieldsArray: array of string;
     DataTypeArray: array of TFieldType;
@@ -95,11 +93,6 @@ procedure TListForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
   isFormCreated[TableTag] := False;
   CloseAction := caFree;
-end;
-
-procedure TListForm.FormResize(Sender: TObject);
-begin
-
 end;
 
 procedure TListForm.DBGridTitleClick(Column: TColumn);
@@ -163,7 +156,7 @@ var
   i: integer;
 begin
   SetLength(FilterArray, Length(FilterArray) + 1);
-  FilterArray[High(FilterArray)] := TMyParentPanel.Create(self);
+  FilterArray[High(FilterArray)] := TMyPanel.Create(self);
   AcceptFilters_spdbtn.Enabled := True;
 
   with FilterArray[High(FilterArray)] do
@@ -183,7 +176,7 @@ begin
       OnChange := @PanelItemChange;
     end;
 
-    with FieldNames do
+    with FieldNamesBox do
     begin
       Parent := FilterArray[High(FilterArray)];
       for i := 0 to (DBGrid.Columns.Count - 1) do
@@ -192,11 +185,11 @@ begin
       OnChange := @PanelItemChange;
     end;
 
-    with Conditions do
+    with ConditionsBox do
     begin
-      Conditions.Parent := FilterArray[High(FilterArray)];
-      for i := 0 to 4 do
-        Items[i] := ConditionsArray[i];
+      ConditionsBox.Parent := FilterArray[High(FilterArray)];
+      for i := 0 to High(Conditions) do
+        Items[i] := Conditions[i].Caption;
       ItemIndex := 0;
       OnChange := @PanelItemChange;
     end;
@@ -235,9 +228,9 @@ begin
   for i := 0 to High(FilterArray) do
   begin
     Params[i] := Format('Param%d', [i]);
-    SQLQuery.Params.CreateParam(DataTypeArray[FilterArray[i].FieldNames.ItemIndex],
+    SQLQuery.Params.CreateParam(DataTypeArray[FilterArray[i].FieldNamesBox.ItemIndex],
       Params[i], ptInput);
-    case DataTypeArray[FilterArray[i].FieldNames.ItemIndex] of
+    case DataTypeArray[FilterArray[i].FieldNamesBox.ItemIndex] of
       ftstring:
         SQLQuery.ParamByName(Params[i]).AsString := FilterArray[i].Edit.Text;
       ftinteger:
@@ -246,7 +239,6 @@ begin
     end;
   end;
   SQLQuery.Close;
-  ShowMessage(SQLQuery.SQL.Text);
   SQLQuery.Open;
   for i := 0 to high(TableArray[TableTag].Fields) do
   begin
@@ -266,7 +258,7 @@ procedure TListForm.RemovePanel(Sender: TObject; Button: TMouseButton;
 var
   j: integer;
 begin
-  AcceptFilters_spdbtn.Enabled := true;
+  AcceptFilters_spdbtn.Enabled := True;
   j := TButton(Sender).Tag;
   if j <> High(FilterArray) then
   begin
@@ -290,7 +282,5 @@ begin
     SetLength(FilterArray, Length(FilterArray) - 1);
   end;
 end;
-
-initialization
 
 end.

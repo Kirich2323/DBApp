@@ -9,11 +9,12 @@ uses
 
 type
 
-  TMyParentPanel = class(TPanel)
+  TMyPanel = class(TPanel)
   public
+    FieldType: string;
     AndOrBox: TComboBox;
-    FieldNames: TComboBox;
-    Conditions: TCombobox;
+    FieldNamesBox: TComboBox;
+    ConditionsBox: TCombobox;
     DeleteButton: TButton;
     Edit: TEdit;
     constructor Create(TheOwner: TComponent);
@@ -21,15 +22,15 @@ type
 
 implementation
 
-constructor TMyParentPanel.Create(TheOwner: TComponent);
+constructor TMyPanel.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
   Width := 800;
   Height := 30;
   Visible := True;
   AndOrBox := TComboBox.Create(self);
-  FieldNames := TComboBox.Create(self);
-  Conditions := TComboBox.Create(self);
+  FieldNamesBox := TComboBox.Create(self);
+  ConditionsBox := TComboBox.Create(self);
   DeleteButton := TButton.Create(self);
   Edit := TEdit.Create(self);
   with AndOrBox do
@@ -38,14 +39,14 @@ begin
     Left := 0;
     Width := 50;
   end;
-  with FieldNames do
+  with FieldNamesBox do
   begin
     Visible := True;
     Width := 200;
     Left := 60;
     BevelOuter := bvNone;
   end;
-  with Conditions do
+  with ConditionsBox do
   begin
     Visible := True;
     Width := 150;
@@ -61,7 +62,7 @@ begin
   begin
     Left := 450;
     Width := 200;
-    Caption := 'Введите значение';
+    //Caption := 'Введите значение';
   end;
 end;
 
