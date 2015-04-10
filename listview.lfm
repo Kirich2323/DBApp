@@ -8,7 +8,6 @@ object ListForm: TListForm
   Constraints.MinHeight = 406
   Constraints.MinWidth = 447
   OnClose = FormClose
-  OnResize = FormResize
   OnShow = FormShow
   LCLVersion = '1.2.4.0'
   object PairSplitter: TPairSplitter
