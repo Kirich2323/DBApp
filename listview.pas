@@ -20,9 +20,10 @@ type
     DataSource: TDataSource;
     DBGrid: TDBGrid;
     DBNavigator1: TDBNavigator;
+    ImageList: TImageList;
     PairSplitter: TPairSplitter;
-    PairSplitterSide1: TPairSplitterSide;
-    PairSplitterSide2: TPairSplitterSide;
+    PairSplitterTop: TPairSplitterSide;
+    PairSplitterBottom: TPairSplitterSide;
     ScrollBox: TScrollBox;
     SQLQuery: TSQLQuery;
     procedure AcceptFilters_btnClick(Sender: TObject);
@@ -30,16 +31,19 @@ type
     procedure DBGridTitleClick(Column: TColumn);
     procedure DeleteAllFilters_btnClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
+    procedure FormResize(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure RemovePanel(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
   private
-    SQLText: string;
+    BaseSQLText: string;
+    FilteredSQLText: string;
   public
     TableTag: integer;
     FilterArray: array of TMyParentPanel;
     FilterArray1: array of string;
     SortArray: array of SortField;
+    FieldsArray: array of string;
   end;
 
 var
@@ -47,28 +51,27 @@ var
 
 implementation
 
-
 {$R *.lfm}
-
-
 { TListForm }
 procedure TListForm.FormShow(Sender: TObject);
 var
   i: integer;
 begin
-  SQLText := SQLQueryCreate(TableTag, SortArray, FilterArray1);
-  SQLQuery.SQL.Text := SQLText;
+  BaseSQLText := MainSQLQueryCreate(TableTag);
+  SQLQuery.SQL.Text := BaseSQLText;
+  FilteredSQLText := BaseSQLText;
   SQLQuery.Open;
   for i := 0 to high(TableArray[TableTag].Fields) do
-  begin
-    DBGrid.Columns.Items[i].FieldName := TableArray[TableTag].Fields[i].Name;
-    DBGrid.Columns.Items[i].Title.Caption := TableArray[TableTag].Fields[i].Caption;
-    //вынести
-    DBGrid.Columns.Items[i].Width := TableArray[TableTag].Fields[i].Width;
-    DBGrid.Columns.Items[i].Visible := TableArray[TableTag].Fields[i].Visible;
-  end;
+    with DBGrid.Columns.Items[i] do
+    begin
+      FieldName := TableArray[TableTag].Fields[i].Name;
+      Title.Caption := TableArray[TableTag].Fields[i].Caption;
+      Width := TableArray[TableTag].Fields[i].Width;
+      Visible := TableArray[TableTag].Fields[i].Visible;
+      SetLength(FieldsArray, Length(FieldsArray) + 1);
+      FieldsArray[High(FieldsArray)] := DBGrid.Columns.Items[i].FieldName;
+    end;
 end;
-
 
 procedure TListForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
@@ -76,68 +79,114 @@ begin
   CloseAction := caFree;
 end;
 
+procedure TListForm.FormResize(Sender: TObject);
+begin
+
+end;
+
 procedure TListForm.DBGridTitleClick(Column: TColumn);
 var
-  i: integer;
+  i, j, Index: integer;
   IsFieldFiltered: boolean;
 begin
   IsFieldFiltered := False;
-  for i := 0 to high(SortArray) do
+  for i := 0 to High(SortArray) do
     if SortArray[i].Name = Column.FieldName then
     begin
-      SortArray[i].IsDescend := not SortArray[i].IsDescend;
+      SortArray[i].State := (SortArray[i].State + 1);
+      if SortArray[i].State = 2 then
+      begin
+        for j := i to (High(SortArray) - 1) do
+          SortArray[j] := SortArray[j + 1];
+        SetLength(SortArray, Length(SortArray) - 1);
+      end;
       IsFieldFiltered := True;
       break;
     end;
   if not (IsFieldFiltered) then
   begin
     SetLength(SortArray, Length(SortArray) + 1);
-    SortArray[High(SortArray)].Name := Column.FieldName;
+    with SortArray[High(SortArray)] do
+    begin
+      Name := Column.FieldName;
+      State := 0;
+      Index := Column.Index;
+    end;
   end;
-  SQLQuery.SQL.Text := SQLQueryCreate(TableTag, SortArray, FilterArray1);
+  SQLQuery.SQL.Text := FilteredSQLText + SortSQLQueryCreate(SortArray);
   SQLQuery.Close;                                                 //вынести
   SQLQuery.Open;
-  for i := 0 to high(TableArray[TableTag].Fields) do
+  with DBGrid.Columns do
   begin
-    DBGrid.Columns.Items[i].FieldName := TableArray[TableTag].Fields[i].Name;
-    DBGrid.Columns.Items[i].Title.Caption := TableArray[TableTag].Fields[i].Caption;
-    DBGrid.Columns.Items[i].Width := TableArray[TableTag].Fields[i].Width;
-    DBGrid.Columns.Items[i].Visible := TableArray[TableTag].Fields[i].Visible;
+    for i := 0 to High(TableArray[TableTag].Fields) do
+    begin
+      with Items[i] do
+      begin
+        FieldName := TableArray[TableTag].Fields[i].Name;
+        Title.Caption := TableArray[TableTag].Fields[i].Caption;
+        Width := TableArray[TableTag].Fields[i].Width;
+        Visible := TableArray[TableTag].Fields[i].Visible;
+      end;
+      for j := 0 to High(SortArray) do
+      begin
+        case SortArray[j].State of
+          0: Items[SortArray[j].Index].Title.ImageIndex := 1;
+          1: Items[SortArray[j].Index].Title.ImageIndex := 0;
+          2: Items[SortArray[j].Index].Title.ImageIndex := -1;
+        end;
+      end;
+    end;
   end;
 end;
 
 procedure TListForm.DeleteAllFilters_btnClick(Sender: TObject);
+var
+  i: integer;
 begin
-
+  for i := 0 to High(FilterArray) do
+    FilterArray[i].Free;
+  SetLength(FilterArray, 0);
 end;
+
 
 procedure TListForm.AddFilter_btnClick(Sender: TObject);
 var
   i: integer;
 begin
   SetLength(FilterArray, Length(FilterArray) + 1);
-  if Length(FilterArray) = 1 then
-  begin
-    FilterArray[High(FilterArray)] := TMyFirstPanel.Create(self);
-  end
-  else
-  begin
-    FilterArray[High(FilterArray)] := TMyOtherPanel.Create(self);
-    FilterArray[High(FilterArray)].AndOrBox.Parent := FilterArray[High(FilterArray)];
-  end;
+  FilterArray[High(FilterArray)] := TMyParentPanel.Create(self);
+
   with FilterArray[High(FilterArray)] do
   begin
     Parent := ScrollBox;
     Top := 50 + 30 * High(FilterArray);
     Left := 10;
+
+    with AndOrBox do
+    begin
+      Parent := FilterArray[High(FilterArray)];
+      if Length(FilterArray) = 1 then
+        Visible := False;
+      for i := 0 to 1 do
+        Items[i] := LogicOperatorsArray[i];
+      ItemIndex := 0;
+    end;
+
     with FieldNames do
     begin
       Parent := FilterArray[High(FilterArray)];
       for i := 0 to (DBGrid.Columns.Count - 1) do
         Items[i] := DBGrid.Columns.Items[i].Title.Caption;
+      ItemIndex := 0;
     end;
 
-    Conditions.Parent := FilterArray[High(FilterArray)];
+    with Conditions do
+    begin
+      Conditions.Parent := FilterArray[High(FilterArray)];
+      for i := 0 to 4 do
+        Items[i] := ConditionsArray[i];
+      ItemIndex := 0;
+    end;
 
     with DeleteButton do
     begin
@@ -151,8 +200,26 @@ begin
 end;
 
 procedure TListForm.AcceptFilters_btnClick(Sender: TObject);
+var
+  i: integer;
 begin
-
+  SQLQuery.SQL.Text := BaseSQLText;
+  SQLQuery.SQL.Add(FilterSQLQueryCreate(FilterArray, FieldsArray));
+  FilteredSQLText := SQLQuery.SQL.Text;
+  ShowMessage(SQLQuery.SQL.Text);
+  SQLQuery.Close;
+  SQLQuery.Open;
+  for i := 0 to high(TableArray[TableTag].Fields) do
+  begin
+    with DBGrid.Columns.Items[i] do
+    begin
+      FieldName := TableArray[TableTag].Fields[i].Name;
+      Title.Caption := TableArray[TableTag].Fields[i].Caption;
+      Width := TableArray[TableTag].Fields[i].Width;
+      Visible := TableArray[TableTag].Fields[i].Visible;
+    end;
+  end;
+  SetLength(SortArray, 0);
 end;
 
 procedure TListForm.RemovePanel(Sender: TObject; Button: TMouseButton;
@@ -171,6 +238,8 @@ begin
     SetLength(FilterArray, Length(FilterArray) - 1);
     for j := 0 to High(FilterArray) do
     begin
+      if j = 0 then
+        FilterArray[j].AndOrBox.Visible := False;
       FilterArray[j].DeleteButton.Tag := j;
       FilterArray[j].Top := 50 + 30 * j;
     end;

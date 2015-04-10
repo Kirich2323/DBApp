@@ -19,14 +19,6 @@ type
     constructor Create(TheOwner: TComponent);
   end;
 
-  TMyFirstPanel = class(TMyParentPanel)
-    constructor Create(TheOwner: TComponent);
-  end;
-
-  TMyOtherPanel = class(TMyParentPanel)
-    constructor Create(TheOwner: TComponent);
-  end;
-
 implementation
 
 constructor TMyParentPanel.Create(TheOwner: TComponent);
@@ -35,46 +27,6 @@ begin
   Width := 800;
   Height := 30;
   Visible := True;
-end;
-
-constructor TMyFirstPanel.Create(TheOwner: TComponent);
-begin
-  inherited Create(TheOwner);
-  FieldNames := TComboBox.Create(self);
-  Conditions := TComboBox.Create(self);
-  DeleteButton := TButton.Create(self);
-  Edit := TEdit.Create(self);
-  with FieldNames do
-  begin
-    Visible := True;
-    Width := 200;
-    Left := 0;
-    BevelOuter := bvNone;
-  end;
-  with Conditions do
-  begin
-    Visible := True;
-    Width := 150;
-    left := 210;
-  end;
-  with DeleteButton do
-  begin
-    Visible := True;
-    Caption := 'Удалить';
-    Left := 580;
-  end;
-  with Edit do
-  begin
-    Left := 370;
-    Width := 200;
-    Caption := 'Введите значение';
-  end;
-
-end;
-
-constructor TMyOtherPanel.Create(TheOwner: TComponent);
-begin
-  inherited Create(TheOwner);
   AndOrBox := TComboBox.Create(self);
   FieldNames := TComboBox.Create(self);
   Conditions := TComboBox.Create(self);
@@ -111,7 +63,6 @@ begin
     Width := 200;
     Caption := 'Введите значение';
   end;
-
 end;
 
 end.
