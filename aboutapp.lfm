@@ -1,7 +1,7 @@
 object AppInfo: TAppInfo
-  Left = 950
+  Left = 1325
   Height = 340
-  Top = 380
+  Top = 143
   Width = 267
   Caption = 'О программе'
   ClientHeight = 340
@@ -11,7 +11,6 @@ object AppInfo: TAppInfo
   Constraints.MinHeight = 340
   Constraints.MinWidth = 267
   FormStyle = fsSystemStayOnTop
-  OnClose = FormClose
   LCLVersion = '1.2.4.0'
   object Developer_txt: TLabel
     Left = 48

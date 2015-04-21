@@ -22,6 +22,7 @@ type
     Quit: TMenuItem;
     procedure AboutAppClick(Sender: TObject);
     procedure BrowseClick(Sender: TObject);
+    procedure AppInfoFormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure ListFormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure MenuItemClick(Sender: TObject);
@@ -98,6 +99,12 @@ begin
     DataBaseConnectionUnit.IBConnection.DatabaseName := OpenDialog.FileName;
 end;
 
+procedure TMainForm.AppInfoFormClose(Sender: TObject; var CloseAction: TCloseAction);
+begin
+  AboutApp.Checked := False;
+  CloseAction := caFree;
+end;
+
 procedure TMainForm.ListFormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
   List.Items[TListForm(Sender).TableTag].Checked := False;
@@ -106,11 +113,16 @@ end;
 
 procedure TMainForm.AboutAppClick(Sender: TObject);
 begin
-  if not (isAboutAppCreated) then
+  if not (AboutApp.Checked) then
   begin
     Application.CreateForm(TAppInfo, AppInfo);
-    AppInfo.Show;
+    with AppInfo do
+    begin
+      AppInfo.Show;
+      OnClose := @AppInfoFormClose;
+    end;
     IsAboutAppCreated := True;
+    AboutApp.Checked := True;
   end
   else
     Appinfo.ShowOnTop;

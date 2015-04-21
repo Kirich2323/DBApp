@@ -17,7 +17,6 @@ type
     Professor_txt: TLabel;
     Year_txt: TLabel;
     procedure Close_btnClick(Sender: TObject);
-    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
   end;
 
 var
@@ -31,13 +30,7 @@ implementation
 
 procedure TAppInfo.Close_btnClick(Sender: TObject);
 begin
-  IsAboutAppCreated := False;
   AppInfo.Close;
-end;
-
-procedure TAppInfo.FormClose(Sender: TObject; var CloseAction: TCloseAction);
-begin
-  CloseAction := caFree;
 end;
 
 end.
