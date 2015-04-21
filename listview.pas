@@ -39,11 +39,12 @@ type
   private
     BaseSQLText: string;
     FilteredSQLText: string;
-  public
-    TableTag: integer;
     FilterArray: array of TMyPanel;
     SortArray: array of SortField;
     FieldsArray: array of string;
+  public
+    TableTag: integer;
+    Table: TTable;
     DataTypeArray: array of TFieldType;
   end;
 
@@ -60,14 +61,14 @@ var
   i: integer;
 begin
   SQLQuery.Open;
-  for i := 0 to high(TableArray[TableTag].Fields) do
+  for i := 0 to high(Table.Fields) do
   begin
     with DBGrid.Columns.Items[i] do
     begin
-      FieldName := TableArray[TableTag].Fields[i].Name;
-      Title.Caption := TableArray[TableTag].Fields[i].Caption;
-      Width := TableArray[TableTag].Fields[i].Width;
-      Visible := TableArray[TableTag].Fields[i].Visible;
+      FieldName := Table.Fields[i].Name;
+      Title.Caption := Table.Fields[i].Caption;
+      Width := Table.Fields[i].Width;
+      Visible := Table.Fields[i].Visible;
     end;
   end;
 end;
@@ -76,16 +77,18 @@ procedure TListForm.FormShow(Sender: TObject);
 var
   i: integer;
 begin
-  BaseSQLText := MainSQLQueryCreate(TableTag);
+  BaseSQLText := MainSQLQueryCreate(Table);
   SQLQuery.SQL.Text := BaseSQLText;
   FilteredSQLText := BaseSQLText;
   EditFields();
-  SetLength(DataTypeArray, Length(TableArray[TableTag].Fields));
-  for i := 0 to high(TableArray[TableTag].Fields) do
+  SetLength(DataTypeArray, Length(Table.Fields));
+  SetLength(FieldsArray, Length(Table.Fields));
+  for i := 0 to High(Table.Fields) do
   begin
-    SetLength(FieldsArray, Length(FieldsArray) + 1);
-    FieldsArray[High(FieldsArray)] := DBGrid.Columns.Items[i].FieldName;
-    DataTypeArray[i] := TableArray[TableTag].Fields[i].TypeOfData;
+    //SetLength(FieldsArray, Length(FieldsArray) + 1);
+    //FieldsArray[High(FieldsArray)] := DBGrid.Columns.Items[i].FieldName;
+    FieldsArray[i] := DBGrid.Columns.Items[i].FieldName;
+    DataTypeArray[i] := Table.Fields[i].TypeOfData;
   end;
 end;
 
@@ -164,10 +167,8 @@ begin
     Parent := ScrollBox;
     Top := 50 + 30 * High(FilterArray);
     Left := 10;
-
     with AndOrBox do
     begin
-      Parent := FilterArray[High(FilterArray)];
       if Length(FilterArray) = 1 then
         Visible := False;
       for i := 0 to 1 do
@@ -178,7 +179,6 @@ begin
 
     with FieldNamesBox do
     begin
-      Parent := FilterArray[High(FilterArray)];
       for i := 0 to (DBGrid.Columns.Count - 1) do
         Items[i] := DBGrid.Columns.Items[i].Title.Caption;
       ItemIndex := 0;
@@ -187,7 +187,6 @@ begin
 
     with ConditionsBox do
     begin
-      ConditionsBox.Parent := FilterArray[High(FilterArray)];
       for i := 0 to High(Conditions) do
         Items[i] := Conditions[i].Caption;
       ItemIndex := 0;
@@ -196,16 +195,12 @@ begin
 
     with DeleteButton do
     begin
-      Parent := FilterArray[High(FilterArray)];
       OnMouseDown := @RemovePanel;
       Tag := High(FilterArray);
     end;
 
     with Edit do
-    begin
-      Parent := FilterArray[High(FilterArray)];
       OnChange := @PanelItemChange;
-    end;
   end;
 end;
 
@@ -239,17 +234,7 @@ begin
     end;
   end;
   SQLQuery.Close;
-  SQLQuery.Open;
-  for i := 0 to high(TableArray[TableTag].Fields) do
-  begin
-    with DBGrid.Columns.Items[i] do
-    begin
-      FieldName := TableArray[TableTag].Fields[i].Name;
-      Title.Caption := TableArray[TableTag].Fields[i].Caption;
-      Width := TableArray[TableTag].Fields[i].Width;
-      Visible := TableArray[TableTag].Fields[i].Visible;
-    end;
-  end;
+  EditFields();
   SetLength(SortArray, 0);
 end;
 
@@ -264,9 +249,7 @@ begin
   begin
     FilterArray[j].Free;
     for j := j to (High(FilterArray) - 1) do
-    begin
       FilterArray[j] := FilterArray[j + 1];
-    end;
     SetLength(FilterArray, Length(FilterArray) - 1);
     for j := 0 to High(FilterArray) do
     begin

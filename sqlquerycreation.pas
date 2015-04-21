@@ -21,7 +21,7 @@ const
   LogicOperatorsArray: array [0..1] of string = ('И', 'Или');
   LogicOperatorsArrayName: array [0..1] of string = ('And', 'Or');
 
-function MainSQLQueryCreate(TableTag: integer): string;
+function MainSQLQueryCreate(Table: TTable): string;
 function SortSQLQueryCreate(SortArray: array of SortField): string;
 function FilterSQLQueryCreate(FilterArray: array of TMyPanel;
   FieldsArray: array of string): string;
@@ -41,81 +41,60 @@ begin
   end;
 end;
 
-function MainSqlQueryCreate(TableTag: integer): string;
+function MainSqlQueryCreate(Table: TTable): string;
 var
   i: integer;
-  s, Query: string;
   CurTable: TTable;
 begin
-  CurTable := TableArray[TableTag];
-  Query := 'Select ';
-  for i := 0 to High(CurTable.Fields) do
-  begin
-    Query += Format('%s.%s, ', [CurTable.Fields[i].Table, CurTable.Fields[i].Name]);
-    if not (i <= (High(CurTable.Fields) - 1)) then
-    begin
-      s := Query;
-      Delete(s, Length(s) - 1, 1);
-      Query := s;
-    end;
-  end;
-  Query += ('From ');
-  Query += (CurTable.Name);
+  Result := Format('Select %s.%s', [Table.Fields[0].Table, Table.Fields[0].Name]);
+  for i := 1 to High(Table.Fields) do
+    Result += Format(', %s.%s ', [Table.Fields[i].Table, Table.Fields[i].Name]);
+  Result += Format(' From %s ', [Table.Name]);
   if Length(CurTable.RefefenceFields) > 0 then
-    for i := 0 to high(CurTable.RefefenceFields) do
-      Query += Format(' inner join %s on %s.%s = %s.%s',
-        [CurTable.RefefenceFields[i].FromTable, CurTable.Name,
-        CurTable.RefefenceFields[i].LeftTablesField,
-        CurTable.RefefenceFields[i].FromTable,
-        CurTable.RefefenceFields[i].RightTablesField]);
-  Result := Query;
+    for i := 0 to high(Table.RefefenceFields) do
+      Result += Format(' inner join %s on %s.%s = %s.%s',
+        [Table.RefefenceFields[i].FromTable, Table.Name,
+        Table.RefefenceFields[i].LeftTablesField,
+        Table.RefefenceFields[i].FromTable,
+        Table.RefefenceFields[i].RightTablesField]);
 end;
 
 function SortSQLQueryCreate(SortArray: array of SortField): string;
 var
   i: integer;
-  s, Query: string;
 begin
   if Length(SortArray) > 0 then
   begin
-    Query := (' Order by ');
-    for i := 0 to high(SortArray) do
+    Result := Format(' Order by %s ', [SortArray[0].Name]);
+    if SortArray[0].State = 1 then
+      Result += ' desc';
+    for i := 1 to high(SortArray) do
     begin
-      Query += (SortArray[i].Name);
+      Result += Format(', %s', [SortArray[i].Name]);
       if SortArray[i].State = 1 then
-        Query += (' desc');
-      Query += (', ');
-      if not (i <= (High(SortArray) - 1)) then
-      begin
-        s := Query;
-        Delete(s, Length(s) - 1, 1);
-        Query := s;
-      end;
+        Result += ' desc';
     end;
   end;
-  Result := Query;
 end;
 
 function FilterSQLQueryCreate(FilterArray: array of TMyPanel;
   FieldsArray: array of string): string;
 var
   i: integer;
-  Query: string;
 begin
   if Length(FilterArray) > 0 then
   begin
-    Query := Format('Where %s %s :param%d',
+    Result := Format('Where %s %s :param%d',
       [FieldsArray[FilterArray[0].FieldNamesBox.ItemIndex],
       Conditions[FilterArray[0].ConditionsBox.ItemIndex].Name, 0]);
     for i := 1 to High(FilterArray) do
     begin
-      Query += Format(' %s %s %s :param%d ',
+      Result += Format(' %s %s %s :param%d ',
         [LogicOperatorsArrayName[FilterArray[i].AndOrBox.ItemIndex],
         FieldsArray[FilterArray[i].FieldNamesBox.ItemIndex],
         Conditions[FilterArray[i].ConditionsBox.ItemIndex].Name, i]);
     end;
   end;
-  Result := Query;
 end;
 
 initialization
@@ -125,6 +104,4 @@ initialization
   AddCondition('Содержит', 'CONTAINING');
   AddCondition('Не содержит', 'NOT CONTAINING');
   AddCondition('Начинается с', 'STARTING WITH');
-
-
 end.
