@@ -1,13 +1,12 @@
 object ListForm: TListForm
-  Left = 571
+  Left = 328
   Height = 595
-  Top = 194
+  Top = 178
   Width = 849
   ClientHeight = 595
   ClientWidth = 849
   Constraints.MinHeight = 406
   Constraints.MinWidth = 447
-  OnClose = FormClose
   OnShow = FormShow
   LCLVersion = '1.2.4.0'
   object PairSplitter: TPairSplitter
@@ -50,7 +49,7 @@ object ListForm: TListForm
         Color = clWindow
         Columns = <>
         DataSource = DataSource
-        Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgThumbTracking]
+        Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgThumbTracking]
         ParentFont = False
         TabOrder = 0
         TitleImageList = ImageList

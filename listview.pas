@@ -31,7 +31,6 @@ type
     procedure PanelItemChange(Sender: TObject);
     procedure DBGridTitleClick(Column: TColumn);
     procedure DeleteAllFilters_btnClick(Sender: TObject);
-    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure RemovePanel(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
@@ -42,6 +41,7 @@ type
     FilterArray: array of TMyPanel;
     SortArray: array of SortField;
     FieldsArray: array of string;
+    FormIndex: integer;
   public
     TableTag: integer;
     Table: TTable;
@@ -90,12 +90,6 @@ begin
     FieldsArray[i] := DBGrid.Columns.Items[i].FieldName;
     DataTypeArray[i] := Table.Fields[i].TypeOfData;
   end;
-end;
-
-procedure TListForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
-begin
-  isFormCreated[TableTag] := False;
-  CloseAction := caFree;
 end;
 
 procedure TListForm.DBGridTitleClick(Column: TColumn);

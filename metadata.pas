@@ -38,8 +38,6 @@ type
 
 var
   TableArray: array of TTable;
-  IsFormCreated: array of boolean;
-  IsAboutAppCreated: boolean;
 
 implementation
 
