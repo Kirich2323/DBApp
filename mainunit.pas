@@ -10,8 +10,6 @@ uses
 
 type
 
-  { TMainForm }
-
   TMainForm = class(TForm)
     MainMenu: TMainMenu;
     List: TMenuItem;
@@ -41,8 +39,6 @@ var
 implementation
 
 {$R *.lfm}
-
-{ TMainForm }
 procedure TMainForm.CreateListReference();
 var
   i: integer;
@@ -51,10 +47,13 @@ begin
   begin
     Reference := TMenuItem.Create(Reference);
     List.Add(Reference);
-    Reference.Visible := True;
-    Reference.Caption := TableArray[i].Caption;
-    Reference.Tag := i;
-    Reference.OnClick := @MenuItemClick;
+    with Reference do
+    begin
+      Visible := True;
+      Caption := TableArray[i].Caption;
+      Tag := i;
+      OnClick := @MenuItemClick;
+    end;
     Setlength(FormsArray, Length(FormsArray) + 1);
     SetLength(IsFormCreated, length(IsFormCreated) + 1);
   end;

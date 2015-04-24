@@ -24,7 +24,10 @@ const
 function MainSQLQueryCreate(Table: TTable): string;
 function SortSQLQueryCreate(SortArray: array of SortField): string;
 function FilterSQLQueryCreate(FilterArray: array of TMyPanel;
-  FieldsArray: array of string): string;
+  FieldsArray: array of TField): string;
+function CreateUpdateSQL(TableName: string; Fields: array of string;
+  Values: array of string; IdField, CurrentId: string): string;
+function CreateInsertSQL(id, TableName: string; Values: array of string): string;
 
 var
   Conditions: array of Condition;
@@ -68,7 +71,7 @@ begin
     Result := Format(' Order by %s ', [SortArray[0].Name]);
     if SortArray[0].State = 1 then
       Result += ' desc';
-    for i := 1 to high(SortArray) do
+    for i := 1 to High(SortArray) do
     begin
       Result += Format(', %s', [SortArray[i].Name]);
       if SortArray[i].State = 1 then
@@ -78,23 +81,46 @@ begin
 end;
 
 function FilterSQLQueryCreate(FilterArray: array of TMyPanel;
-  FieldsArray: array of string): string;
+  FieldsArray: array of TField): string;
 var
   i: integer;
 begin
   if Length(FilterArray) > 0 then
   begin
     Result := Format('Where %s %s :param%d',
-      [FieldsArray[FilterArray[0].FieldNamesBox.ItemIndex],
+      [FieldsArray[FilterArray[0].FieldNamesBox.ItemIndex].Name,
       Conditions[FilterArray[0].ConditionsBox.ItemIndex].Name, 0]);
     for i := 1 to High(FilterArray) do
     begin
       Result += Format(' %s %s %s :param%d ',
         [LogicOperatorsArrayName[FilterArray[i].AndOrBox.ItemIndex],
-        FieldsArray[FilterArray[i].FieldNamesBox.ItemIndex],
+        FieldsArray[FilterArray[i].FieldNamesBox.ItemIndex].Name,
         Conditions[FilterArray[i].ConditionsBox.ItemIndex].Name, i]);
     end;
   end;
+end;
+
+function CreateUpdateSQL(TableName: string; Fields: array of string;
+  Values: array of string; IdField, CurrentId: string): string;
+var
+  i: integer;
+begin
+  Result := Format('Update %s Set %s = %s', [TableName, Fields[0], CurrentId]);
+  for i := 1 to high(Fields) do
+  begin
+    Result += Format(', %s = %s', [Fields[i], Values[i - 1]]);
+  end;
+  Result += Format(' Where %s = %s', [IdField, CurrentId]);
+end;
+
+function CreateInsertSQL(id, TableName: string; Values: array of string): string;
+var
+  i: integer;
+begin
+  Result := Format('Insert into %s VALUES(%s', [TableName, id]);
+  for i := 0 to High(Values) do
+    Result += Format(', %s', [Values[i]]);
+  Result += ')';
 end;
 
 initialization

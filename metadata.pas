@@ -17,6 +17,7 @@ type
     Visible: boolean;
     Table: string;
     TypeOfData: TFieldType;
+    InnerJoin: boolean;
   end;
 
   TReferenceField = class(Tfield)
@@ -70,6 +71,7 @@ begin
     TypeOfData := DataType;
     Visible := IsVisible;
     Table := TableName;
+    InnerJoin := NeedToJoin;
   end;
 
   if NeedToJoin then
@@ -101,45 +103,46 @@ end;
 initialization
   with TTable.RegisterTable('Students', 'Студенты') do
   begin
+    AddField('StudentID', 'Ид', ftinteger, 'Students', 100, False);
     AddField('StudentInitials', 'Фамилия Имя Отчество',
       ftstring, 'Students', 220, True);
     AddField('GroupNumber', 'Номер группы', ftstring, 'Groups',
       130, True, True, 'Groupid', 'Groupid');
-    AddField('GroupName', 'Специальность', ftstring, 'Groups',
-      250, True, True, 'Groupid', 'Groupid');
+    //AddField('GroupName', 'Специальность', ftstring, 'Groups',
+    //  250, True, True, 'Groupid', 'Groupid');
   end;
 
   with Ttable.RegisterTable('Groups', 'Группы') do
   begin
-    //AddField('Groupid', 'id', ftinteger, 'Groups', 30, False);
+    AddField('Groupid', 'id', ftinteger, 'Groups', 30, False);
     AddField('GroupNumber', 'Номер группы', ftstring, 'Groups', 130, True);
     AddField('GroupName', 'Специальность', ftstring, 'Groups', 250, True);
   end;
 
   with Ttable.RegisterTable('Teachers', 'Преподаватели') do
   begin
-    //AddField('Teacherid', 'id', ftinteger, 'Teachers', 30, False);
+    AddField('Teacherid', 'id', ftinteger, 'Teachers', 30, False);
     AddField('TeacherInitials', 'Фамилия Имя Отчество',
       ftstring, 'Teachers', 230, True);
   end;
 
   with TTable.RegisterTable('Subjects', 'Предметы') do
   begin
-    //AddField('Subjectid', 'id', ftinteger, 'Subjects', 30, False);
+    AddField('Subjectid', 'id', ftinteger, 'Subjects', 30, False);
     AddField('SubjectName', 'Наименование предмета', ftstring, 'Subjects',
       215, True);
   end;
 
   with Ttable.RegisterTable('Audiences', 'Аудитории') do
   begin
-    //AddField('Audienceid', 'id', ftinteger, 'Audiences', 30, False);
+    AddField('Audienceid', 'id', ftinteger, 'Audiences', 30, False);
     AddField('AudienceNumber', 'Номер Аудитории', ftstring, 'Audiences',
       150, True);
   end;
 
   with Ttable.RegisterTable('Pairs', 'Занятия') do
   begin
-    //AddField('Pairid', 'id', ftinteger, 'Pairs', 30, False);
+    AddField('Pairid', 'id', ftinteger, 'Pairs', 30, False);
     AddField('PairNumber', 'Номер занятия', ftinteger, 'Pairs', 130, True);
     AddField('PairBegin', 'Начало занятия', ftstring, 'Pairs', 120, True);
     AddField('PairEnd', 'Окончание занятия', ftstring, 'Pairs', 150, True);
@@ -147,13 +150,14 @@ initialization
 
   with Ttable.RegisterTable('WeekDays', 'Дни недели') do
   begin
-    //AddField('WeekDayid', 'id', ftinteger, 'WeekDays', 30, False);
+    AddField('WeekDayid', 'id', ftinteger, 'WeekDays', 30, False);
     AddField('WeekDayName', 'День недели', ftstring, 'WeekDays', 130, True);
     AddField('WeekDayNumber', 'Номер дня недели', ftinteger, 'WeekDays', 150, True);
   end;
 
   with Ttable.RegisterTable('Schedules', 'Расписание') do
   begin
+    AddField('ScheduleId', 'id', ftinteger, 'Schedules', 30, False);
     AddField('GroupNumber', 'Номер группы', ftstring, 'Groups',
       130, True, True, 'GroupId', 'GroupId');
 
@@ -162,8 +166,8 @@ initialization
 
     AddField('PairNumber', 'Номер занятия', ftinteger, 'Pairs', 150,
       True, True, 'PairId', 'PairId');
-    AddField('PairBegin', 'Начало занятия', ftstring, 'Pairs', 120, True);
-    AddField('PairEnd', 'Окончание занятия', ftstring, 'Pairs', 150, True);
+    //AddField('PairBegin', 'Начало занятия', ftstring, 'Pairs', 120, True);
+    //AddField('PairEnd', 'Окончание занятия', ftstring, 'Pairs', 150, True);
 
     AddField('SubjectName', 'Наименование предмета', ftstring, 'Subjects',
       215, True, True, 'SubjectId', 'SubjectId');
@@ -180,6 +184,7 @@ initialization
 
   with Ttable.RegisterTable('Teachers_Subjects', 'Предметы преподавателей') do
   begin
+    AddField('Teacher_SubjectId', 'id', ftinteger, 'Teachers_subjects', 30, False);
     AddField('TeacherInitials', 'Фамилия Имя Отчество',
       ftstring, 'Teachers', 230, True, True, 'TeacherId', 'TeacherId');
     AddField('SubjectName', 'Наименование предмета', ftstring, 'Subjects',

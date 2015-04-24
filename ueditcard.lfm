@@ -1,0 +1,52 @@
+object EditCard: TEditCard
+  Left = 359
+  Height = 582
+  Top = 183
+  Width = 400
+  Caption = 'EditCard'
+  ClientHeight = 582
+  ClientWidth = 400
+  Constraints.MaxWidth = 400
+  Constraints.MinWidth = 400
+  OnShow = FormCreate
+  LCLVersion = '1.2.4.0'
+  object Accept_btn: TButton
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 80
+    Height = 25
+    Top = 532
+    Width = 75
+    Anchors = [akLeft, akBottom]
+    BorderSpacing.Bottom = 25
+    Caption = 'Принять'
+    OnClick = Accept_btnClick
+    TabOrder = 0
+  end
+  object Cancel_btn: TButton
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 240
+    Height = 25
+    Top = 532
+    Width = 75
+    Anchors = [akLeft, akBottom]
+    BorderSpacing.Bottom = 25
+    Caption = 'Отмена'
+    OnClick = Cancel_btnClick
+    TabOrder = 1
+  end
+  object TempDataSource: TDataSource
+    DataSet = TempSQLQuery
+    left = 48
+    top = 48
+  end
+  object TempSQLQuery: TSQLQuery
+    FieldDefs = <>
+    Database = DataBaseConnectionUnit.IBConnection
+    Transaction = DataBaseConnectionUnit.SQLTransaction
+    Params = <>
+    left = 152
+    top = 48
+  end
+end

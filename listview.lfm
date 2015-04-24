@@ -1,7 +1,7 @@
 object ListForm: TListForm
-  Left = 328
+  Left = 454
   Height = 595
-  Top = 178
+  Top = 214
   Width = 849
   ClientHeight = 595
   ClientWidth = 849
@@ -49,10 +49,11 @@ object ListForm: TListForm
         Color = clWindow
         Columns = <>
         DataSource = DataSource
-        Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgThumbTracking]
+        Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgThumbTracking]
         ParentFont = False
         TabOrder = 0
         TitleImageList = ImageList
+        OnDblClick = DBGridDblClick
         OnTitleClick = DBGridTitleClick
       end
       object DBNavigator1: TDBNavigator
@@ -91,8 +92,9 @@ object ListForm: TListForm
         Height = 240
         Top = 0
         Width = 849
-        HorzScrollBar.Page = 428
+        HorzScrollBar.Page = 840
         VertScrollBar.Page = 33
+        VertScrollBar.Tracking = True
         Align = alClient
         ClientHeight = 236
         ClientWidth = 845
@@ -125,11 +127,22 @@ object ListForm: TListForm
           AllowAllUp = True
           Caption = 'Применить фильры'
           Color = clSilver
+          Enabled = False
           Font.Color = clBackground
           Layout = blGlyphTop
           Spacing = 0
           OnClick = AcceptFilters_btnClick
           ParentFont = False
+        end
+        object CreateNew_btn: TButton
+          Left = 712
+          Height = 25
+          Top = 8
+          Width = 128
+          AutoSize = True
+          Caption = 'Добавить Элемент'
+          OnClick = CreateNew_btnClick
+          TabOrder = 2
         end
       end
     end
@@ -140,7 +153,7 @@ object ListForm: TListForm
     Transaction = DataBaseConnectionUnit.SQLTransaction
     SQL.Strings = (
       'SELECT *'
-      'FROM'
+      'FROM   Students'
     )
     Params = <>
     left = 328

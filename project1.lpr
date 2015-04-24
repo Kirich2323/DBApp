@@ -11,7 +11,8 @@ uses {$IFDEF UNIX} {$IFDEF UseCThreads}
   Listview,
   MetaData,
   AboutApp,
-  SQLQueryCreation;
+  SQLQueryCreation,
+  UMyPanel, UEditCard;
 
 {$R *.res}
 
@@ -21,5 +22,6 @@ begin
   Application.CreateForm(TMainForm, MainForm);
   Application.CreateForm(TDataBaseConnectionUnit, DataBaseConnectionUnit);
   Application.CreateForm(TAppInfo, AppInfo);
+  //Application.CreateForm(TEditCard, EditCard);
   Application.Run;
 end.
