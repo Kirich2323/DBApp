@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, DB, BufDataset, sqldb, FileUtil, Forms, Controls, Graphics,
-  Dialogs, StdCtrls, DBCtrls, DBGrids, MetaData, SQLQueryCreation, DataUnit;
+  Dialogs, StdCtrls, DBCtrls, DBGrids, MetaData, SQLQueryCreation, DataUnit, Windows;
 
 type
 
@@ -20,7 +20,8 @@ type
     procedure Accept_btnClick(Sender: TObject);
     procedure Cancel_btnClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
-    procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    function ChekErrors(): boolean;
   private
     FieldsCaptions: array of TLabel;
     EditControls: array of TControl;
@@ -44,6 +45,21 @@ begin
   Close;
 end;
 
+function TEditCard.ChekErrors(): boolean;
+var
+  i: integer;
+begin
+  Result := False;
+  for i := 0 to High(EditControls) do
+    if TEdit(EditControls[i]).Text = '' then
+    begin
+      MessageBox(Handle, PChar(Utf8ToAnsi('Заполните пожалуйста все поля!')),
+        PChar(Utf8ToAnsi('Ошибка')), MB_OK);
+      Result := True;
+      break;
+    end;
+end;
+
 procedure TEditCard.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
   CloseAction := caFree;
@@ -55,58 +71,71 @@ var
   NewId: string;
   Values: array of string;
   FieldsNames: array of string;
+  IsError: boolean;
 begin
-  SetLength(Values, Length(EditControls));
-  for i := 0 to High(EditControls) do
+  IsError := ChekErrors();
+
+  if not IsError then
   begin
-    if Fields[i].InnerJoin then
+    IsError := False;
+    SetLength(Values, Length(EditControls));
+    for i := 0 to High(EditControls) do
+      if Fields[i].InnerJoin then
+      begin
+        CardSQLQuery.SQL.Text :=
+          Format('Select first 1 skip %s * from %s',
+          [IntToStr(TDBLookupComboBox(EditControls[i]).ItemIndex),
+          Fields[i].Table]);
+        CardSQLQuery.Open;
+        Values[i] := CardDataSource.DataSet.Fields.FieldByNumber(1).Value;
+        CardSQLQuery.Close;
+      end
+      else
+        Values[i] := Format('''%s''', [TEdit(EditControls[i]).Text]);
+
+    //CardSQLQuery.Close;
+
+    if IsCreateNew then
     begin
-      CardSQLQuery.SQL.Text :=
-        Format('Select first 1 skip %s * from %s',
-        [IntToStr(TDBLookupComboBox(EditControls[i]).ItemIndex),
-        Fields[i].Table]);
-      CardSQLQuery.Open;
-      Values[i] := CardDataSource.DataSet.Fields.FieldByNumber(1).Value;
-      CardSQLQuery.Close;
+      with CardSQLQuery do
+      begin
+        SQL.Text :=
+          Format('Select Max(%s) From %s', [CurrentTable.Fields[0].Name,
+          CurrentTable.Name]);
+        Open;
+        NewId := CardDataSource.DataSet.FieldByName('Max').Value + 1;
+        Close;
+        SQL.Text := CreateInsertSQL(NewId, CurrentTable.Name, Values);
+      end;
     end
     else
-      Values[i] := Format('''%s''', [TEdit(EditControls[i]).Text]);
+    begin
+      with CardSQLQuery do
+      begin
+        SQL.Text := Format('Select * from %s', [CurrentTable.Name]);
+        Open;
+        SetLength(FieldsNames, CardDataSource.DataSet.Fields.Count);
+        for i := 0 to High(FieldsNames) do
+          FieldsNames[i] := CardDataSource.DataSet.Fields[i].FieldName;
+        Close;
+        SQl.Text :=
+          CreateUpdateSQL(CurrentTable.Name, FieldsNames, Values,
+          CurrentTable.Fields[0].Name, CurrentId);
+      end;
+    end;
+
+    CardSQLQuery.ExecSQL;
+    DataBaseConnectionUnit.SQLTransaction.Commit;
+    Close;
   end;
-
-  CardSQLQuery.Close;
-
-  if IsCreateNew then
-  begin
-    CardSQLQuery.SQL.Text :=
-      Format('Select Max(%s) From %s', [CurrentTable.Fields[0].Name, CurrentTable.Name]);
-    CardSQLQuery.Open;
-    NewId := CardDataSource.DataSet.FieldByName('Max').Value + 1;
-    CardSQLQuery.Close;
-    CardSQLQuery.SQL.Text := CreateInsertSQL(NewId, CurrentTable.Name, Values);
-  end
-  else
-  begin
-    CardSQLQuery.SQL.Text := Format('Select * from %s', [CurrentTable.Name]);
-    CardSQLQuery.Open;
-    SetLength(FieldsNames, CardDataSource.DataSet.Fields.Count);
-    for i := 0 to High(FieldsNames) do
-      FieldsNames[i] := CardDataSource.DataSet.Fields[i].FieldName;
-    CardSQLQuery.Close;
-    CardSQLQuery.SQl.Text := CreateUpdateSQL(CurrentTable.Name,
-      FieldsNames, Values, CurrentTable.Fields[0].Name, CurrentId);
-  end;
-
-  CardSQLQuery.ExecSQL;
-  DataBaseConnectionUnit.SQLTransaction.Commit;
-  Close;
 end;
 
-procedure TEditCard.FormCreate(Sender: TObject);
+procedure TEditCard.FormShow(Sender: TObject);
 var
   PreviousControl: TControl;
-  i, j: integer;
+  i: integer;
 begin
-  SetLength(FieldsCaptions, Length(Fields));      //Оптимизировать это!!!
+  SetLength(FieldsCaptions, Length(Fields));
   SetLength(EditControls, Length(Fields));
   PreviousControl := EditCard;
   CurrentId := ListDataSource.DataSet.Fields.FieldByNumber(1).Value;
@@ -136,7 +165,7 @@ begin
       Parent := Self;
       AnchorToNeighbour(akTop, 10, PreviousControl);
       Left := 200;
-      Width := 180;
+      Width := 280;
     end;
 
     FieldsCaptions[i] := TLabel.Create(Self);
@@ -164,11 +193,8 @@ begin
 
   if not IsCreateNew then
     for i := 0 to High(Fields) do
-      try
-        TEdit(EditControls[i]).Text :=
-          ListDataSource.DataSet.FieldByName(Fields[i].Name).Value;
-      finally
-      end;
+      TEdit(EditControls[i]).Text :=
+        ListDataSource.DataSet.FieldByName(Fields[i].Name).Value;
 end;
 
 end.

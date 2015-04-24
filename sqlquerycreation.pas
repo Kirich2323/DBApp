@@ -28,6 +28,7 @@ function FilterSQLQueryCreate(FilterArray: array of TMyPanel;
 function CreateUpdateSQL(TableName: string; Fields: array of string;
   Values: array of string; IdField, CurrentId: string): string;
 function CreateInsertSQL(id, TableName: string; Values: array of string): string;
+function CreateDeleteSQL(TableName, IdField, id: string): string;
 
 var
   Conditions: array of Condition;
@@ -121,6 +122,11 @@ begin
   for i := 0 to High(Values) do
     Result += Format(', %s', [Values[i]]);
   Result += ')';
+end;
+
+function CreateDeleteSQL(TableName, IdField, id: string): string;
+begin
+  Result := Format('Delete from %s Where %s = %s', [TableName, IdField, id]);
 end;
 
 initialization

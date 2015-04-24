@@ -1,46 +1,46 @@
 CREATE DATABASE 'D:\Databases\test.fdb' user 'SYSDBA' password 'masterkey' DEFAULT CHARACTER SET WIN1251;
 CREATE TABLE EducActivities
 (
-    EducID   INTEGER, 
+    EducID INTEGER not null primary key, 
     EducName VARCHAR (100) 
 );
 CREATE TABLE Teachers
 ( 
-	TeacherID       INTEGER ,
+	TeacherID INTEGER  not null primary key,
 	TeacherInitials VARCHAR (100)
 );
 CREATE TABLE Groups
 (
-	GroupID     INTEGER ,
+	GroupID     INTEGER  not null primary key,
 	GroupNumber VARCHAR (100) ,
 	GroupName   VARCHAR (100)  
 );
 CREATE TABLE Students
 ( 
-	StudentID       INTEGER ,
+	StudentID       INTEGER  not null primary key,
 	StudentInitials VARCHAR (100) ,
 	GroupID         INTEGER 
 );
 CREATE TABLE Subjects
 ( 
-	SubjectID   INTEGER ,
+	SubjectID   INTEGER  not null primary key,
     SubjectName VARCHAR (100) 
 );
 CREATE TABLE Audiences
 (
-    AudienceID     INTEGER ,
+    AudienceID     INTEGER  not null primary key,
 	AudienceNumber VARCHAR (100)  
 );
 CREATE TABLE Pairs
 (
-	PairID     INTEGER ,
+	PairID     INTEGER  not null primary key,
 	PairBegin  VARCHAR (100) ,
 	PairEnd    VARCHAR (100) ,
 	PairNumber INTEGER  
 );
 CREATE TABLE WeekDays
 (
-	WeekDayID     INTEGER ,
+	WeekDayID     INTEGER  not null primary key,
 	WeekDayName   VARCHAR (100) , 
 	WeekDayNumber INTEGER  
 );

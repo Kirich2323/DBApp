@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, DBGrids,
   DBCtrls, StdCtrls, Menus, ExtCtrls, PairSplitter, Buttons, sqldb, DB,
-  MetaData, SQLQueryCreation, UMyPanel, UEditCard, DataUnit;
+  MetaData, SQLQueryCreation, UMyPanel, UEditCard, DataUnit, Windows;
 
 type
 
@@ -39,7 +39,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure RemovePanel(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
-    procedure EditFields();
+    procedure CustomizeColumns();
   private
     BaseSQLText: string;
     FilteredSQLText: string;
@@ -60,7 +60,7 @@ implementation
 
 {$R *.lfm}
 
-procedure TListForm.EditFields();
+procedure TListForm.CustomizeColumns();
 var
   i: integer;
 begin
@@ -85,7 +85,7 @@ begin
     for i := 0 to (FormCount - 2) do
     begin
       if Forms[i].ClassName = 'TListForm' then
-        TListForm(Forms[i]).EditFields();
+        TListForm(Forms[i]).CustomizeColumns();
     end;
 end;
 
@@ -118,7 +118,7 @@ begin
   BaseSQLText := MainSQLQueryCreate(Table);
   SQLQuery.SQL.Text := BaseSQLText;
   FilteredSQLText := BaseSQLText;
-  EditFields();
+  CustomizeColumns();
   for i := 0 to High(Table.Fields) do
     if Table.Fields[i].Visible then
     begin
@@ -159,7 +159,7 @@ begin
 
   SQLQuery.SQL.Text := FilteredSQLText + SortSQLQueryCreate(SortArray);
   SQLQuery.Close;
-  EditFields();
+  CustomizeColumns();
 
   with DBGrid.Columns do
   begin
@@ -270,14 +270,19 @@ procedure TListForm.DeleteField_btnClick(Sender: TObject);
 var
   TempSQL: string;
 begin
-  TempSQL := SQLQuery.SQL.Text;
-  SQLQuery.SQL.Text := CreateDeleteSQL(Table.Name, DBGrid.Columns.Items[0].FieldName,
-    DataSource.DataSet.Fields[0].Value);
-  SQLQuery.Close;
-  SQLQuery.ExecSQL;
-  DataUnit.DataBaseConnectionUnit.SQLTransaction.Commit;
-  SQLQuery.SQL.Text := TempSQL;
-  RefreshListForms();
+  if MessageBox(Handle, PChar(
+    Utf8ToAnsi('Вы действительно хотите удалить этот элемент?')),
+    '', MB_YESNO) = mrYes then
+  begin
+    TempSQL := SQLQuery.SQL.Text;
+    SQLQuery.SQL.Text := CreateDeleteSQL(Table.Name, DBGrid.Columns.Items[0].FieldName,
+      DataSource.DataSet.Fields[0].Value);
+    SQLQuery.Close;
+    SQLQuery.ExecSQL;
+    DataUnit.DataBaseConnectionUnit.SQLTransaction.Commit;
+    SQLQuery.SQL.Text := TempSQL;
+    RefreshListForms();
+  end;
 end;
 
 
@@ -294,7 +299,7 @@ begin
   AcceptFilters_spdbtn.Enabled := False;
   MakeParametrs();
   SQLQuery.Close;
-  EditFields();
+  CustomizeColumns();
   SetLength(SortArray, 0);
 end;
 
