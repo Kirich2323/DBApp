@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, DBGrids,
   DBCtrls, StdCtrls, Menus, ExtCtrls, PairSplitter, Buttons, sqldb, DB,
-  MetaData, SQLQueryCreation, UMyPanel, UEditCard;
+  MetaData, SQLQueryCreation, UMyPanel, UEditCard, DataUnit;
 
 type
 
@@ -15,6 +15,7 @@ type
 
   TListForm = class(TForm)
     AddFilter_btn: TButton;
+    DeleteField_btn: TButton;
     CreateNew_btn: TButton;
     DeleteAllFilters_btn: TButton;
     DataSource: TDataSource;
@@ -29,10 +30,9 @@ type
     SQLQuery: TSQLQuery;
     procedure AcceptFilters_btnClick(Sender: TObject);
     procedure AddFilter_btnClick(Sender: TObject);
-    procedure AcceptEditCardButtonClick(Sender: TObject);
     procedure CreateNew_btnClick(Sender: TObject);
     procedure DBGridDblClick(Sender: TObject);
-    procedure EditCardFormClose(Sender: TObject; var CloseAction: TCloseAction);
+    procedure DeleteField_btnClick(Sender: TObject);
     procedure PanelItemChange(Sender: TObject);
     procedure DBGridTitleClick(Column: TColumn);
     procedure DeleteAllFilters_btnClick(Sender: TObject);
@@ -59,7 +59,6 @@ var
 implementation
 
 {$R *.lfm}
-{ TListForm }
 
 procedure TListForm.EditFields();
 var
@@ -76,6 +75,18 @@ begin
       Visible := Table.Fields[i].Visible;
     end;
   end;
+end;
+
+procedure RefreshListForms();
+var
+  i: integer;
+begin
+  with Screen do
+    for i := 0 to (FormCount - 2) do
+    begin
+      if Forms[i].ClassName = 'TListForm' then
+        TListForm(Forms[i]).EditFields();
+    end;
 end;
 
 procedure TListForm.MakeParametrs();
@@ -107,7 +118,6 @@ begin
   BaseSQLText := MainSQLQueryCreate(Table);
   SQLQuery.SQL.Text := BaseSQLText;
   FilteredSQLText := BaseSQLText;
-  //ShowMessage(SQLQuery.SQL.Text);
   EditFields();
   for i := 0 to High(Table.Fields) do
     if Table.Fields[i].Visible then
@@ -224,249 +234,52 @@ begin
   end;
 end;
 
-procedure TListForm.AcceptEditCardButtonClick(Sender: TObject);
-begin
-  //пофиксить
-end;
-
 procedure TListForm.CreateNew_btnClick(Sender: TObject);
 var
   i: integer;
-  PreviousControl: TControl;
 begin
   Application.CreateForm(TEditCard, EditCard);
-  EditCard.Fields := VisibleFields;
   with EditCard do
   begin
+    Fields := VisibleFields;
     IsCreateNew := True;
     CurrentTable := Table;
-    TestDataSource := DataSource;
-    //  SetLength(FieldsCaptions, Length(VisibleFields));      //Оптимизировать это!!!
-    //  SetLength(EditControls, Length(VisibleFields));
-    //  FieldsCaptions[0] := TLabel.Create(Self);
-    //  if VisibleFields[0].InnerJoin then
-    //  begin
-    //    TempSQLQuery.SQL.Text :=
-    //      Format('Select %s from %s', [VisibleFields[0].Name, VisibleFields[0].Table]);
-    //    TempSQLQuery.Open;
-    //    EditControls[0] := TDBLookupComboBox.Create(Self);
-    //    TDBLookUpComboBox(EditControls[0]).ListSource := TempDataSource;
-    //    TDBLookUpComboBox(EditControls[0]).KeyField := VisibleFields[i].Name;
-    //    TempSQLQuery.Close;
-    //    TDBLookUpComboBox(EditControls[0]).ListSource := nil;
-    //  end
-    //  else
-    //  begin
-    //    EditControls[0] := TDBEdit.Create(Self);
-    //    TDBEdit(EditControls[0]).DataSource := DataSource;
-    //    TDBEdit(EditControls[0]).DataField := VisibleFields[0].Name;
-    //    EditControls[0].AutoSize := True;
-    //    //TDBEdit(EditControls[0]).DataSource := nil;
-    //    //TDBEdit(EditControls[0]).Text := '';
-    //  end;
-    //  with FieldsCaptions[0] do
-    //  begin
-    //    Parent := EditCard;
-    //    Caption := VisibleFields[0].Caption;
-    //    Top := 30;
-    //    Left := 15;
-    //    AutoSize := True;
-    //  end;
-    //  with EditControls[0] do
-    //  begin
-    //    Parent := EditCard;
-    //    Top := 30;
-    //    Left := 200;
-    //    Width := 180;
-    //    //AutoSize := True;
-    //  end;
-    //  //--
-    //  PreviousControl := EditControls[0];
-    //  //CreateOtherControls
-    //  for i := 1 to High(VisibleFields) do
-    //  begin
-    //    FieldsCaptions[i] := TLabel.Create(Self);
-    //    if VisibleFields[i].InnerJoin then
-    //    begin
-    //      EditControls[i] := TDBLookupComboBox.Create(Self);
-    //      //TDBLookUpComboBox(EditControls[i]).DataSource := DataSource;       //пофиксить
-    //      //TDBLookUpComboBox(EditControls[i]).ListSource := DataSource;
-    //      TempSQLQuery.SQL.Text :=
-    //        Format('Select %s from %s', [VisibleFields[i].Name,
-    //        VisibleFields[i].Table]);
-    //      TempSQLQuery.Open;
-    //      ShowMessage(TempSQLQuery.SQL.Text); //showmessage
-    //      TDBLookUpComboBox(EditControls[i]).ListSource := TempDataSource;
-    //      //TDBLookUpComboBox(EditControls[i]).DataSource := EditCard.TempDataSource;
-    //      //TDBLookUpComboBox(EditControls[i]).DataField := VisibleFields[i].Name;
-    //      TDBLookUpComboBox(EditControls[i]).KeyField := VisibleFields[i].Name;
-    //      TDBLookUpComboBox(EditControls[i]).ListSource := nil;
-    //      TempSQLQuery.Close;
-    //    end
-    //    else
-    //    begin
-    //      EditControls[i] := TDBEdit.Create(Self);
-    //      TDBEdit(EditControls[i]).DataSource := DataSource;
-    //      TDBEdit(EditControls[i]).DataField := VisibleFields[i].Name;
-    //      EditControls[i].AutoSize := True;
-    //      //TDBEdit(EditControls[i]).DataSource := nil;
-    //      //TDBEdit(EditControls[i]).Text := '';
-    //    end;
-    //    with FieldsCaptions[i] do
-    //    begin
-    //      Parent := EditCard;
-    //      Visible := True;
-    //      Caption := VisibleFields[i].Caption;
-    //      AnchorToNeighbour(akTop, 10, PreviousControl);
-    //      Left := 15;
-    //      AutoSize := True;
-    //    end;
-    //    with EditControls[i] do
-    //    begin
-    //      //AutoSize := True;
-    //      AnchorSide[akTop].Side := asrTop;
-    //      Parent := EditCard;
-    //      AnchorToNeighbour(akTop, 10, PreviousControl);
-    //      Visible := True;
-    //      Top := 30 + 50 * i;
-    //      Left := 200;
-    //      Width := 180;
-    //    end;
-    //    PreviousControl := EditControls[i];
-    //    //Accept_btn.OnClick := @AcceptEditCardButtonClick;
-    //  end;
-    //-----
-    OnClose := @EditCardFormClose;
+    ListDataSource := DataSource;
     ShowModal;
+    RefreshListForms();
   end;
 end;
 
 procedure TListForm.DBGridDblClick(Sender: TObject);
 var
   i: integer;
-  PreviousControl: TControl;
 begin
   Application.CreateForm(TEditCard, EditCard);
-  EditCard.Fields := VisibleFields;
   with EditCard do
   begin
+    Fields := VisibleFields;
     IsCreateNew := False;
     CurrentTable := Table;
-    TestDataSource := DataSource;
-    //  SetLength(FieldsCaptions, Length(VisibleFields)); //Оптимизировать это!!!
-    //  SetLength(EditControls, Length(VisibleFields));
-    //  //CreateFirstControl();
-    //  FieldsCaptions[0] := TLabel.Create(Self);
-    //  if VisibleFields[0].InnerJoin then
-    //  begin
-    //    EditCard.TempSQLQuery.SQL.Text :=
-    //      Format('Select %s from %s', [VisibleFields[0].Name, VisibleFields[0].Table]);
-    //    EditCard.TempSQLQuery.Open;
-    //    EditControls[0] := TDBLookupComboBox.Create(Self);
-    //    TDBLookUpComboBox(EditControls[0]).ListSource := EditCard.TempDataSource;
-    //    TDBLookUpComboBox(EditControls[0]).KeyField := VisibleFields[i].Name;
-    //    EditCard.TempSQLQuery.Close;
-    //    TDBLookUpComboBox(EditControls[0]).ListSource := nil;
-    //  end
-    //  else
-    //  begin
-    //    EditControls[0] := TDBEdit.Create(Self);
-    //    TDBEdit(EditControls[0]).DataSource := DataSource;
-    //    TDBEdit(EditControls[0]).DataField := VisibleFields[0].Name;
-    //    EditControls[0].AutoSize := True;
-    //  end;
-    //  with FieldsCaptions[0] do
-    //  begin
-    //    Parent := EditCard;
-    //    Caption := VisibleFields[0].Caption;
-    //    Top := 30;
-    //    Left := 15;
-    //    AutoSize := True;
-    //  end;
-    //  with EditControls[0] do
-    //  begin
-    //    Parent := EditCard;
-    //    Top := 30;
-    //    Left := 200;
-    //    Width := 180;
-    //    //AutoSize := True;
-    //  end;
-    //  //--
-    //  PreviousControl := EditControls[0];
-    //  //CreateOtherControls
-    //  for i := 1 to High(VisibleFields) do
-    //  begin
-    //    FieldsCaptions[i] := TLabel.Create(Self);
-    //    if VisibleFields[i].InnerJoin then
-    //    begin
-    //      EditControls[i] := TDBLookupComboBox.Create(Self);
-    //      //TDBLookUpComboBox(EditControls[i]).DataSource := DataSource;       //пофиксить
-    //      //TDBLookUpComboBox(EditControls[i]).ListSource := DataSource;
-    //      EditCard.TempSQLQuery.SQL.Text :=
-    //        Format('Select %s from %s', [VisibleFields[i].Name,
-    //        VisibleFields[i].Table]);
-    //      EditCard.TempSQLQuery.Open;
-    //      ShowMessage(EditCard.TempSQLQuery.SQL.Text);
-    //      TDBLookUpComboBox(EditControls[i]).ListSource := EditCard.TempDataSource;
-    //      //TDBLookUpComboBox(EditControls[i]).DataSource := EditCard.TempDataSource;
-    //      //TDBLookUpComboBox(EditControls[i]).DataField := VisibleFields[i].Name;
-    //      TDBLookUpComboBox(EditControls[i]).KeyField := VisibleFields[i].Name;
-    //      TDBLookUpComboBox(EditControls[i]).ListSource := nil;
-    //      EditCard.TempSQLQuery.Close;
-    //      //TDBLookUpComboBox(EditControls[i]).DataSource := nil;
-    //      //EditControls[i] := TDBComboBox.Create(Self);
-    //      //TDBComboBox(EditControls[i]).DataSource := EditCard.TempDataSource;
-    //      //EditCard.TempSQLQuery.SQL.Text :=
-    //      //  Format('Select %s from %s', [VisibleFields[i].Name,
-    //      //  VisibleFields[i].Table]);
-    //      //EditCard.TempSQLQuery.Open;
-    //      //TDBComboBox(EditControls[i]).DataField := VisibleFields[i].Name;
-    //      //EditCard.TempSQLQuery.Close;
-    //      //TDBComboBox(EditControls[i]).DataSource := nil;
-    //    end
-    //    else
-    //    begin
-    //      EditControls[i] := TDBEdit.Create(Self);
-    //      TDBEdit(EditControls[i]).DataSource := DataSource;
-    //      TDBEdit(EditControls[i]).DataField := VisibleFields[i].Name;
-    //      EditControls[i].AutoSize := True;
-    //    end;
-    //    with FieldsCaptions[i] do
-    //    begin
-    //      Parent := EditCard;
-    //      Visible := True;
-    //      Caption := VisibleFields[i].Caption;
-    //      AnchorToNeighbour(akTop, 10, PreviousControl);
-    //      Left := 15;
-    //      AutoSize := True;
-    //    end;
-    //    with EditControls[i] do
-    //    begin
-    //      //AutoSize := True;
-    //      AnchorSide[akTop].Side := asrTop;
-    //      Parent := EditCard;
-    //      AnchorToNeighbour(akTop, 10, PreviousControl);
-    //      Visible := True;
-    //      Top := 30 + 50 * i;
-    //      Left := 200;
-    //      Width := 180;
-    //    end;
-    //    PreviousControl := EditControls[i];
-    //    //Accept_btn.OnClick := @AcceptEditCardButtonClick;
-    //  end;
-    //  //DBLookupComboBox1.DataField := VisibleFields[1].Name;
-    //  //DBLookupComboBox1.KeyField := VisibleFields[1].Name;
-    //  //-----
-    OnClose := @EditCardFormClose;
+    ListDataSource := DataSource;
     ShowModal;
+    RefreshListForms();
   end;
 end;
 
-procedure TListForm.EditCardFormClose(Sender: TObject; var CloseAction: TCloseAction);
+procedure TListForm.DeleteField_btnClick(Sender: TObject);
+var
+  TempSQL: string;
 begin
-
-  CloseAction := caFree;
+  TempSQL := SQLQuery.SQL.Text;
+  SQLQuery.SQL.Text := CreateDeleteSQL(Table.Name, DBGrid.Columns.Items[0].FieldName,
+    DataSource.DataSet.Fields[0].Value);
+  SQLQuery.Close;
+  SQLQuery.ExecSQL;
+  DataUnit.DataBaseConnectionUnit.SQLTransaction.Commit;
+  SQLQuery.SQL.Text := TempSQL;
+  RefreshListForms();
 end;
+
 
 procedure TListForm.PanelItemChange(Sender: TObject);
 begin

@@ -15,19 +15,20 @@ type
   TEditCard = class(TForm)
     Accept_btn: TButton;
     Cancel_btn: TButton;
-    TempSQLQuery: TSQLQuery;
-    TempDataSource: TDataSource;
+    CardSQLQuery: TSQLQuery;
+    CardDataSource: TDataSource;
     procedure Accept_btnClick(Sender: TObject);
     procedure Cancel_btnClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
   private
-  public
     FieldsCaptions: array of TLabel;
     EditControls: array of TControl;
-    Fields: array of Tfield;
-    CurrentTable: TTable;
-    TestDataSource: TDataSource;
     CurrentId: string;
+  public
+    Fields: array of TField;
+    CurrentTable: TTable;
+    ListDataSource: TDataSource;
     IsCreateNew: boolean;
   end;
 
@@ -43,9 +44,14 @@ begin
   Close;
 end;
 
+procedure TEditCard.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+begin
+  CloseAction := caFree;
+end;
+
 procedure TEditCard.Accept_btnClick(Sender: TObject);
 var
-  i, j: integer;
+  i: integer;
   NewId: string;
   Values: array of string;
   FieldsNames: array of string;
@@ -55,42 +61,43 @@ begin
   begin
     if Fields[i].InnerJoin then
     begin
-      TempSQLQuery.SQL.Text :=
+      CardSQLQuery.SQL.Text :=
         Format('Select first 1 skip %s * from %s',
         [IntToStr(TDBLookupComboBox(EditControls[i]).ItemIndex),
         Fields[i].Table]);
-      TempSQLQuery.Open;
-      Values[i] := TempDataSOurce.DataSet.Fields.FieldByNumber(1).Value;
-      TempSQLQuery.Close;
+      CardSQLQuery.Open;
+      Values[i] := CardDataSource.DataSet.Fields.FieldByNumber(1).Value;
+      CardSQLQuery.Close;
     end
     else
       Values[i] := Format('''%s''', [TEdit(EditControls[i]).Text]);
   end;
 
-  TempSQLQuery.Close;
+  CardSQLQuery.Close;
 
   if IsCreateNew then
   begin
-    TempSQLQuery.SQL.Text :=
+    CardSQLQuery.SQL.Text :=
       Format('Select Max(%s) From %s', [CurrentTable.Fields[0].Name, CurrentTable.Name]);
-    TempSQLQuery.Open;
-    NewId := TempDataSource.DataSet.FieldByName('Max').Value + 1;
-    TempSQLQuery.Close;
-    TempSQLQuery.SQL.Text := CreateInsertSQL(NewId, CurrentTable.Name, Values);
+    CardSQLQuery.Open;
+    NewId := CardDataSource.DataSet.FieldByName('Max').Value + 1;
+    CardSQLQuery.Close;
+    CardSQLQuery.SQL.Text := CreateInsertSQL(NewId, CurrentTable.Name, Values);
   end
   else
   begin
-    TempSQLQuery.SQL.Text := Format('Select * from %s', [CurrentTable.Name]);
-    TempSQLQuery.Open;
-    SetLength(FieldsNames, TempDataSource.DataSet.Fields.Count);
+    CardSQLQuery.SQL.Text := Format('Select * from %s', [CurrentTable.Name]);
+    CardSQLQuery.Open;
+    SetLength(FieldsNames, CardDataSource.DataSet.Fields.Count);
     for i := 0 to High(FieldsNames) do
-      FieldsNames[i] := TempDataSource.DataSet.Fields[i].FieldName;
-    TempSQLQuery.Close;
-    TempSQLQuery.SQl.Text := CreateUpdateSQL(CurrentTable.Name,
+      FieldsNames[i] := CardDataSource.DataSet.Fields[i].FieldName;
+    CardSQLQuery.Close;
+    CardSQLQuery.SQl.Text := CreateUpdateSQL(CurrentTable.Name,
       FieldsNames, Values, CurrentTable.Fields[0].Name, CurrentId);
   end;
-  TempSQLQuery.ExecSQL;
-  DataUnit.DataBaseConnectionUnit.SQLTransaction.Commit;
+
+  CardSQLQuery.ExecSQL;
+  DataBaseConnectionUnit.SQLTransaction.Commit;
   Close;
 end;
 
@@ -102,24 +109,24 @@ begin
   SetLength(FieldsCaptions, Length(Fields));      //Оптимизировать это!!!
   SetLength(EditControls, Length(Fields));
   PreviousControl := EditCard;
-  CurrentId := TestDataSource.DataSet.Fields.FieldByNumber(1).Value;
+  CurrentId := ListDataSource.DataSet.Fields.FieldByNumber(1).Value;
 
   for i := 0 to High(Fields) do
   begin
     if Fields[i].InnerJoin then
     begin
       EditControls[i] := TDBLookupComboBox.Create(Self);
-      TempSQLQuery.SQL.Text :=
+      CardSQLQuery.SQL.Text :=
         Format('Select %s from %s', [Fields[i].Name, Fields[i].Table]);
-      TempSQLQuery.Open;
+      CardSQLQuery.Open;
       with TDBLookUpComboBox(EditControls[i]) do
       begin
-        ListSource := TempDataSource;
+        ListSource := CardDataSource;
         KeyField := Fields[i].Name;
         Style := csDropDownList;
         ListSource := nil;
       end;
-      TempSQLQuery.Close;
+      CardSQLQuery.Close;
     end
     else
       EditControls[i] := TEdit.Create(Self);
@@ -159,7 +166,7 @@ begin
     for i := 0 to High(Fields) do
       try
         TEdit(EditControls[i]).Text :=
-          TestDataSource.DataSet.FieldByName(Fields[i].Name).Value;
+          ListDataSource.DataSet.FieldByName(Fields[i].Name).Value;
       finally
       end;
 end;
