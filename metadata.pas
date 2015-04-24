@@ -143,9 +143,9 @@ initialization
   with Ttable.RegisterTable('Pairs', 'Занятия') do
   begin
     AddField('Pairid', 'id', ftinteger, 'Pairs', 30, False);
-    AddField('PairNumber', 'Номер занятия', ftinteger, 'Pairs', 130, True);
     AddField('PairBegin', 'Начало занятия', ftstring, 'Pairs', 120, True);
     AddField('PairEnd', 'Окончание занятия', ftstring, 'Pairs', 150, True);
+    AddField('PairNumber', 'Номер занятия', ftinteger, 'Pairs', 130, True);
   end;
 
   with Ttable.RegisterTable('WeekDays', 'Дни недели') do
@@ -166,8 +166,6 @@ initialization
 
     AddField('PairNumber', 'Номер занятия', ftinteger, 'Pairs', 150,
       True, True, 'PairId', 'PairId');
-    //AddField('PairBegin', 'Начало занятия', ftstring, 'Pairs', 120, True);
-    //AddField('PairEnd', 'Окончание занятия', ftstring, 'Pairs', 150, True);
 
     AddField('SubjectName', 'Наименование предмета', ftstring, 'Subjects',
       215, True, True, 'SubjectId', 'SubjectId');
@@ -193,6 +191,7 @@ initialization
 
   with Ttable.RegisterTable('Group_Subjects', 'Предметы групп') do
   begin
+    AddField('Group_SubjectsID', 'id', ftinteger, 'Group_Subjects', 30, False);
     AddField('GroupNumber', 'Номер группы', ftstring, 'Groups',
       130, True, True, 'GroupId', 'GroupId');
     AddField('SubjectName', 'Наименование предмета', ftstring, 'Subjects',
