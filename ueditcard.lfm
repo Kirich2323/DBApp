@@ -1,14 +1,14 @@
 object EditCard: TEditCard
-  Left = 625
-  Height = 650
-  Top = 172
+  Left = 675
+  Height = 310
+  Top = 239
   Width = 500
-  Caption = 'EditCard'
-  ClientHeight = 650
+  Caption = 'Карточка'
+  ClientHeight = 310
   ClientWidth = 500
-  Constraints.MaxHeight = 650
+  Constraints.MaxHeight = 410
   Constraints.MaxWidth = 500
-  Constraints.MinHeight = 400
+  Constraints.MinHeight = 310
   Constraints.MinWidth = 500
   OnClose = FormClose
   OnShow = FormShow
@@ -18,7 +18,7 @@ object EditCard: TEditCard
     AnchorSideBottom.Side = asrBottom
     Left = 112
     Height = 25
-    Top = 600
+    Top = 260
     Width = 75
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 25
@@ -31,7 +31,7 @@ object EditCard: TEditCard
     AnchorSideBottom.Side = asrBottom
     Left = 312
     Height = 25
-    Top = 600
+    Top = 260
     Width = 75
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 25

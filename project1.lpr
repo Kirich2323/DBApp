@@ -12,7 +12,7 @@ uses {$IFDEF UNIX} {$IFDEF UseCThreads}
   MetaData,
   AboutApp,
   SQLQueryCreation,
-  UMyPanel, UEditCard;
+  UMyPanel, UEditCard, USchedule, laz_fpspreadsheet;
 
 {$R *.res}
 
@@ -22,6 +22,8 @@ begin
   Application.CreateForm(TMainForm, MainForm);
   Application.CreateForm(TDataBaseConnectionUnit, DataBaseConnectionUnit);
   Application.CreateForm(TAppInfo, AppInfo);
+  //Application.CreateForm(TForm1, Form1);
+  //Application.CreateForm(TSchedule, Schedule);
   //Application.CreateForm(TEditCard, EditCard);
   Application.Run;
 end.

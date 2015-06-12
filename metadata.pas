@@ -12,6 +12,7 @@ type
   TField = class
   public
     Name: string;
+    NativeName: string;
     Caption: string;
     Width: integer;
     Visible: boolean;
@@ -82,17 +83,18 @@ begin
         IsTableAlreadyExists := True;
         break;
       end;
+    CurrentTable.Fields[High(CurrentTable.Fields)].NativeName := JoinFieldLeft;
 
     if not IsTableAlreadyExists then
     begin
-      SetLength(CurrentTable.RefefenceFields, length(CurrentTable.RefefenceFields) + 1);
+      SetLength(CurrentTable.RefefenceFields, Length(CurrentTable.RefefenceFields) + 1);
       CurrentTable.RefefenceFields[High(CurrentTable.RefefenceFields)] :=
         TReferenceField.Create;
 
       with CurrentTable.RefefenceFields[high(CurrentTable.RefefenceFields)] do
       begin
         FromTable := TableName;
-        FiledName := FieldName;
+        //FiledName := FieldName;
         LeftTablesField := JoinFieldLeft;
         RightTablesField := JoiningFieldRight;
       end;
@@ -157,32 +159,39 @@ initialization
 
   with Ttable.RegisterTable('Schedules', 'Расписание') do
   begin
-    AddField('ScheduleId', 'id', ftinteger, 'Schedules', 30, False);
+    AddField('RecordId', 'id', ftinteger, 'Schedules', 30, False);
+    AddField('GroupId', 'GroupId', ftinteger, 'Schedules', 30, False);
     AddField('GroupNumber', 'Номер группы', ftstring, 'Groups',
       130, True, True, 'GroupId', 'GroupId');
 
+    AddField('WeekDayId', 'WeekDayId', ftinteger, 'Schedules', 30, False);
     AddField('WeekDayName', 'День недели', ftstring, 'WeekDays', 130,
       True, True, 'WeekDayId', 'WeekDayId');
 
+    AddField('PairId', 'PairId', ftinteger, 'Schedules', 30, False);
     AddField('PairNumber', 'Номер занятия', ftinteger, 'Pairs', 150,
       True, True, 'PairId', 'PairId');
 
+    AddField('SubjectId', 'SubjectId', ftinteger, 'Schedules', 30, False);
     AddField('SubjectName', 'Наименование предмета', ftstring, 'Subjects',
       215, True, True, 'SubjectId', 'SubjectId');
 
+    AddField('EducId', 'EducId', ftinteger, 'Schedules', 30, False);
     AddField('EducName', 'Вид занятия', ftstring, 'EducActivities', 130,
       True, True, 'EducId', 'EducId');
 
+    AddField('TeacherId', 'TeacherId', ftinteger, 'Schedules', 30, False);
     AddField('TeacherInitials', 'Фамилия Имя Отчество',
       ftstring, 'Teachers', 230, True, True, 'TeacherId', 'TeacherId');
 
+    AddField('AudienceId', 'AudienceId', ftinteger, 'Schedules', 30, False);
     AddField('AudienceNumber', 'Номер Аудитории', ftstring, 'Audiences',
       150, True, True, 'AudienceId', 'AudienceId');
   end;
 
   with Ttable.RegisterTable('Teachers_Subjects', 'Предметы преподавателей') do
   begin
-    AddField('Teacher_SubjectId', 'id', ftinteger, 'Teachers_subjects', 30, False);
+    AddField('RecordId', 'id', ftinteger, 'Teachers_subjects', 30, False);
     AddField('TeacherInitials', 'Фамилия Имя Отчество',
       ftstring, 'Teachers', 230, True, True, 'TeacherId', 'TeacherId');
     AddField('SubjectName', 'Наименование предмета', ftstring, 'Subjects',
@@ -191,7 +200,7 @@ initialization
 
   with Ttable.RegisterTable('Group_Subjects', 'Предметы групп') do
   begin
-    AddField('Group_SubjectsID', 'id', ftinteger, 'Group_Subjects', 30, False);
+    AddField('RecordId', 'id', ftinteger, 'Group_Subjects', 30, False);
     AddField('GroupNumber', 'Номер группы', ftstring, 'Groups',
       130, True, True, 'GroupId', 'GroupId');
     AddField('SubjectName', 'Наименование предмета', ftstring, 'Subjects',

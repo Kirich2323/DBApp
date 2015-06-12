@@ -14,10 +14,8 @@ type
   { TListForm }
 
   TListForm = class(TForm)
-    AddFilter_btn: TButton;
     DeleteField_btn: TButton;
     CreateNew_btn: TButton;
-    DeleteAllFilters_btn: TButton;
     DataSource: TDataSource;
     DBGrid: TDBGrid;
     DBNavigator1: TDBNavigator;
@@ -26,32 +24,29 @@ type
     PairSplitterTop: TPairSplitterSide;
     PairSplitterBottom: TPairSplitterSide;
     ScrollBox: TScrollBox;
-    AcceptFilters_spdbtn: TSpeedButton;
     SQLQuery: TSQLQuery;
-    procedure AcceptFilters_btnClick(Sender: TObject);
-    procedure AddFilter_btnClick(Sender: TObject);
     procedure CreateNew_btnClick(Sender: TObject);
     procedure DBGridDblClick(Sender: TObject);
     procedure DeleteField_btnClick(Sender: TObject);
-    procedure PanelItemChange(Sender: TObject);
     procedure DBGridTitleClick(Column: TColumn);
-    procedure DeleteAllFilters_btnClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure RemovePanel(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: integer);
     procedure CustomizeColumns();
+    procedure AcceptFilters();
   private
     BaseSQLText: string;
     FilteredSQLText: string;
     FilterArray: array of TMyPanel;
     SortArray: array of SortField;
     VisibleFields: array of TField;
-    FormIndex: integer;
+    id: integer;
     procedure MakeParametrs();
   public
+    Filter: TMainFilter;
     TableTag: integer;
     Table: TTable;
   end;
+
+  TEvent = procedure of object;
 
 var
   ListForm: TListForm;
@@ -65,6 +60,7 @@ var
   i: integer;
 begin
   SQLQuery.Open;
+  SQLQuery.Locate(Table.Fields[0].Name, id, []);
   for i := 0 to High(Table.Fields) do
   begin
     with DBGrid.Columns.Items[i] do
@@ -77,36 +73,24 @@ begin
   end;
 end;
 
-procedure RefreshListForms();
-var
-  i: integer;
-begin
-  with Screen do
-    for i := 0 to (FormCount - 2) do
-    begin
-      if Forms[i].ClassName = 'TListForm' then
-        TListForm(Forms[i]).CustomizeColumns();
-    end;
-end;
-
 procedure TListForm.MakeParametrs();
 var
   i: integer;
   Params: array of string;
 begin
-  SetLength(Params, Length(FilterArray));
+  SetLength(Params, Length(Filter.Filters));
   for i := 0 to High(Params) do
   begin
     Params[i] := Format('Param%d', [i]);
     SQLQuery.Params.CreateParam(
-      VisibleFields[FilterArray[i].FieldNamesBox.ItemIndex].TypeOfData,
+      VisibleFields[Filter.Filters[i].FieldNamesBox.ItemIndex].TypeOfData,
       Params[i], ptInput);
-    case VisibleFields[FilterArray[i].FieldNamesBox.ItemIndex].TypeOfData of
+    case VisibleFields[Filter.Filters[i].FieldNamesBox.ItemIndex].TypeOfData of
       ftstring:
-        SQLQuery.ParamByName(Params[i]).AsString := FilterArray[i].Edit.Text;
+        SQLQuery.ParamByName(Params[i]).AsString := Filter.Filters[i].Edit.Text;
       ftinteger:
         SQLQuery.ParamByName(Params[i]).AsInteger :=
-          StrToInt(FilterArray[i].Edit.Text);
+          StrToInt(Filter.Filters[i].Edit.Text);
     end;
   end;
 end;
@@ -119,6 +103,7 @@ begin
   SQLQuery.SQL.Text := BaseSQLText;
   FilteredSQLText := BaseSQLText;
   CustomizeColumns();
+  Filter := TMainFilter.Create(ScrollBox, Table.Fields, @AcceptFilters);
   for i := 0 to High(Table.Fields) do
     if Table.Fields[i].Visible then
     begin
@@ -127,9 +112,20 @@ begin
     end;
 end;
 
+procedure TListForm.AcceptFilters();
+begin
+  SQLQuery.SQL.Text := BaseSQLText;
+  SQLQuery.SQL.Add(FilterSQLQueryCreate(Filter.Filters, Filter.VisibleFields));
+  FilteredSQLText := SQLQuery.SQL.Text;
+  MakeParametrs();
+  SQLQuery.Close;
+  CustomizeColumns();
+  SetLength(SortArray, 0);
+end;
+
 procedure TListForm.DBGridTitleClick(Column: TColumn);
 var
-  i, j, Index: integer;
+  i, j: integer;
   IsFieldFiltered: boolean;
 begin
   IsFieldFiltered := False;
@@ -174,95 +170,48 @@ begin
   end;
 end;
 
-procedure TListForm.DeleteAllFilters_btnClick(Sender: TObject);
-var
-  i: integer;
-begin
-  AcceptFilters_spdbtn.Enabled := True;
-  for i := 0 to High(FilterArray) do
-    FilterArray[i].Free;
-  SetLength(FilterArray, 0);
-end;
-
-procedure TListForm.AddFilter_btnClick(Sender: TObject);
-var
-  i: integer;
-begin
-  SetLength(FilterArray, Length(FilterArray) + 1);
-  FilterArray[High(FilterArray)] := TMyPanel.Create(Self);
-  AcceptFilters_spdbtn.Enabled := True;
-
-  with FilterArray[High(FilterArray)] do
-  begin
-    Parent := ScrollBox;
-    Top := 50 + 30 * High(FilterArray);
-    Left := 10;
-    with AndOrBox do
-    begin
-      if Length(FilterArray) = 1 then
-        Visible := False;
-      for i := 0 to 1 do
-        Items[i] := LogicOperatorsArray[i];
-      ItemIndex := 0;
-      OnChange := @PanelItemChange;
-    end;
-
-    with FieldNamesBox do
-    begin
-      for i := 0 to High(VisibleFields) do
-        Items[i] := VisibleFields[i].Caption;
-      ItemIndex := 0;
-      OnChange := @PanelItemChange;
-    end;
-
-    with ConditionsBox do
-    begin
-      for i := 0 to High(Conditions) do
-        Items[i] := Conditions[i].Caption;
-      ItemIndex := 0;
-      OnChange := @PanelItemChange;
-    end;
-
-    with DeleteButton do
-    begin
-      OnMouseDown := @RemovePanel;
-      Tag := High(FilterArray);
-    end;
-
-    with Edit do
-      OnChange := @PanelItemChange;
-  end;
-end;
-
 procedure TListForm.CreateNew_btnClick(Sender: TObject);
-var
-  i: integer;
 begin
   Application.CreateForm(TEditCard, EditCard);
   with EditCard do
   begin
-    Fields := VisibleFields;
-    IsCreateNew := True;
+    id := -1;
     CurrentTable := Table;
-    ListDataSource := DataSource;
-    ShowModal;
-    RefreshListForms();
+    Show;
   end;
 end;
 
 procedure TListForm.DBGridDblClick(Sender: TObject);
 var
   i: integer;
+  CurrId: integer;
+  IsExist: boolean;
 begin
-  Application.CreateForm(TEditCard, EditCard);
-  with EditCard do
+  IsExist := False;
+  CurrId := SQLQuery.Fields[0].Value;
+  with Screen do
   begin
-    Fields := VisibleFields;
-    IsCreateNew := False;
-    CurrentTable := Table;
-    ListDataSource := DataSource;
-    ShowModal;
-    RefreshListForms();
+    for i := 0 to FormCount - 1 do
+      if Forms[i] is TEditCard then
+        if (TEditCard(Forms[i]).Id > 0) and (TEditCard(Forms[i]).ID = CurrId) and
+          (TEditCard(Forms[i]).CurrentTable = Table) then
+        begin
+          Forms[i].ShowOnTop;
+          IsExist := True;
+          break;
+        end;
+  end;
+
+  if not IsExist then
+  begin
+    Application.CreateForm(TEditCard, EditCard);
+    with EditCard do
+    begin
+      Id := CurrId;
+      CurrentTable := Table;
+      Show;
+    end;
+    id := CurrID;
   end;
 end;
 
@@ -275,59 +224,25 @@ begin
     '', MB_YESNO) = mrYes then
   begin
     TempSQL := SQLQuery.SQL.Text;
-    SQLQuery.SQL.Text := CreateDeleteSQL(Table.Name, DBGrid.Columns.Items[0].FieldName,
-      DataSource.DataSet.Fields[0].Value);
+    SQLQuery.SQL.Text := CreateDeleteSQL(Table.Name,
+      DBGrid.Columns.Items[0].FieldName, DataSource.DataSet.Fields[0].Value);
     SQLQuery.Close;
-    SQLQuery.ExecSQL;
-    DataUnit.DataBaseConnectionUnit.SQLTransaction.Commit;
-    SQLQuery.SQL.Text := TempSQL;
-    RefreshListForms();
-  end;
-end;
-
-
-procedure TListForm.PanelItemChange(Sender: TObject);
-begin
-  AcceptFilters_spdbtn.Enabled := True;
-end;
-
-procedure TListForm.AcceptFilters_btnClick(Sender: TObject);
-begin
-  SQLQuery.SQL.Text := BaseSQLText;
-  SQLQuery.SQL.Add(FilterSQLQueryCreate(FilterArray, VisibleFields));
-  FilteredSQLText := SQLQuery.SQL.Text;
-  AcceptFilters_spdbtn.Enabled := False;
-  MakeParametrs();
-  SQLQuery.Close;
-  CustomizeColumns();
-  SetLength(SortArray, 0);
-end;
-
-procedure TListForm.RemovePanel(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: integer);
-var
-  j: integer;
-begin
-  AcceptFilters_spdbtn.Enabled := True;
-  j := TButton(Sender).Tag;
-  if j <> High(FilterArray) then
-  begin
-    FilterArray[j].Free;
-    for j := j to (High(FilterArray) - 1) do
-      FilterArray[j] := FilterArray[j + 1];
-    SetLength(FilterArray, Length(FilterArray) - 1);
-    for j := 0 to High(FilterArray) do
-    begin
-      if j = 0 then
-        FilterArray[j].AndOrBox.Visible := False;
-      FilterArray[j].DeleteButton.Tag := j;
-      FilterArray[j].Top := 50 + 30 * j;
+    try
+      begin
+        SQLQuery.ExecSQL;
+        DataUnit.DataBaseConnectionUnit.SQLTransaction.Commit;
+        SQLQuery.SQL.Text := TempSQL;
+        RefreshForms();
+      end;
+    except
+      begin
+        SQLQuery.SQL.Text := TempSQL;
+        RefreshForms();
+        MessageBox(Handle, PChar(
+          Utf8ToAnsi('Удаление невозможно, так как на данный элемент ссылается другой элемент')),
+          '', MB_OK);
+      end;
     end;
-  end
-  else
-  begin
-    FilterArray[j].Free;
-    SetLength(FilterArray, Length(FilterArray) - 1);
   end;
 end;
 

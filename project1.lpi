@@ -28,18 +28,21 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="3">
+    <RequiredPackages Count="4">
       <Item1>
-        <PackageName Value="FCL"/>
+        <PackageName Value="laz_fpspreadsheet"/>
       </Item1>
       <Item2>
-        <PackageName Value="SQLDBLaz"/>
+        <PackageName Value="FCL"/>
       </Item2>
       <Item3>
-        <PackageName Value="LCL"/>
+        <PackageName Value="SQLDBLaz"/>
       </Item3>
+      <Item4>
+        <PackageName Value="LCL"/>
+      </Item4>
     </RequiredPackages>
-    <Units Count="7">
+    <Units Count="12">
       <Unit0>
         <Filename Value="project1.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -89,6 +92,39 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="AboutApp"/>
       </Unit6>
+      <Unit7>
+        <Filename Value="sqlquearycreation.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="SQLQuearyCreation"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="umypanel.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UMyPanel"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="ueditcard.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="EditCard"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="UEditCard"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="uschedule.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Schedule"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="USchedule"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="unit1.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="Unit1"/>
+      </Unit11>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -116,7 +152,7 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="3">
+    <Exceptions Count="5">
       <Item1>
         <Name Value="EAbort"/>
       </Item1>
@@ -126,6 +162,12 @@
       <Item3>
         <Name Value="EFOpenError"/>
       </Item3>
+      <Item4>
+        <Name Value="EStringListError"/>
+      </Item4>
+      <Item5>
+        <Name Value="EIBDatabaseError"/>
+      </Item5>
     </Exceptions>
   </Debugging>
 </CONFIG>

@@ -1,13 +1,13 @@
 object DataBaseConnectionUnit: TDataBaseConnectionUnit
   OldCreateOrder = False
-  Height = 151
-  HorizontalOffset = 1920
-  VerticalOffset = 306
-  Width = 150
+  Height = 162
+  HorizontalOffset = 1554
+  VerticalOffset = 842
+  Width = 116
   object IBConnection: TIBConnection
     Connected = False
     LoginPrompt = False
-    DatabaseName = 'D:\databases\TEST.FDB'
+    DatabaseName = 'TEST.FDB'
     KeepConnection = False
     Password = 'masterkey'
     Transaction = SQLTransaction

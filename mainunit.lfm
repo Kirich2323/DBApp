@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 264
+  Left = 899
   Height = 370
-  Top = 435
+  Top = 468
   Width = 343
   Caption = 'DataBaseApp'
   Menu = MainMenu
@@ -20,6 +20,10 @@ object MainForm: TMainForm
         Caption = 'Выход'
         OnClick = QuitClick
       end
+    end
+    object ISchedule: TMenuItem
+      Caption = 'Расписание'
+      OnClick = IScheduleClick
     end
     object List: TMenuItem
       Caption = 'Справочник'

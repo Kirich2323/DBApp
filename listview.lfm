@@ -1,12 +1,12 @@
 object ListForm: TListForm
-  Left = 677
-  Height = 598
-  Top = 247
-  Width = 629
-  ClientHeight = 598
-  ClientWidth = 629
-  Constraints.MinHeight = 422
-  Constraints.MinWidth = 568
+  Left = 1095
+  Height = 673
+  Top = 159
+  Width = 983
+  ClientHeight = 673
+  ClientWidth = 983
+  Constraints.MinHeight = 425
+  Constraints.MinWidth = 700
   OnShow = FormShow
   LCLVersion = '1.2.4.0'
   object PairSplitter: TPairSplitter
@@ -18,9 +18,9 @@ object ListForm: TListForm
     AnchorSideBottom.Side = asrBottom
     Cursor = crVSplit
     Left = 0
-    Height = 598
+    Height = 673
     Top = 0
-    Width = 629
+    Width = 983
     Align = alCustom
     Anchors = [akTop, akLeft, akRight, akBottom]
     Position = 350
@@ -30,8 +30,8 @@ object ListForm: TListForm
       Left = 0
       Height = 350
       Top = 0
-      Width = 629
-      ClientWidth = 629
+      Width = 983
+      ClientWidth = 983
       ClientHeight = 350
       object DBGrid: TDBGrid
         AnchorSideLeft.Control = PairSplitterTop
@@ -42,14 +42,14 @@ object ListForm: TListForm
         AnchorSideBottom.Control = PairSplitterTop
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 321
-        Top = 29
-        Width = 629
+        Height = 325
+        Top = 25
+        Width = 983
         Anchors = [akTop, akLeft, akRight, akBottom]
         Color = clWindow
         Columns = <>
         DataSource = DataSource
-        Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgThumbTracking]
+        Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgThumbTracking]
         ParentFont = False
         TabOrder = 0
         TitleImageList = ImageList
@@ -60,7 +60,7 @@ object ListForm: TListForm
         AnchorSideLeft.Control = PairSplitterTop
         AnchorSideTop.Control = PairSplitterTop
         Left = 0
-        Height = 29
+        Height = 25
         Top = 0
         Width = 368
         BevelOuter = bvNone
@@ -71,101 +71,59 @@ object ListForm: TListForm
         ChildSizing.ShrinkVertical = crsScaleChilds
         ChildSizing.Layout = cclLeftToRightThenTopToBottom
         ChildSizing.ControlsPerLine = 100
-        ClientHeight = 29
+        ClientHeight = 25
         ClientWidth = 368
         DataSource = DataSource
         Options = []
         TabOrder = 1
         VisibleButtons = [nbFirst, nbPrior, nbNext, nbLast]
       end
+      object CreateNew_btn: TButton
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideRight.Control = DeleteField_btn
+        AnchorSideRight.Side = asrCenter
+        Left = 368
+        Height = 25
+        Top = 0
+        Width = 144
+        BorderSpacing.Top = 8
+        BorderSpacing.Right = 5
+        Caption = 'Добавить элемент'
+        OnClick = CreateNew_btnClick
+        TabOrder = 2
+      end
+      object DeleteField_btn: TButton
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideRight.Side = asrBottom
+        Left = 512
+        Height = 25
+        Top = 0
+        Width = 144
+        BorderSpacing.Top = 8
+        BorderSpacing.Right = 5
+        Caption = 'Удалить элемент'
+        OnClick = DeleteField_btnClick
+        TabOrder = 3
+      end
     end
     object PairSplitterBottom: TPairSplitterSide
       Cursor = crArrow
       Left = 0
-      Height = 243
+      Height = 318
       Top = 355
-      Width = 629
-      ClientWidth = 629
-      ClientHeight = 243
+      Width = 983
+      ClientWidth = 983
+      ClientHeight = 318
       object ScrollBox: TScrollBox
         Left = 0
-        Height = 243
+        Height = 318
         Top = 0
-        Width = 629
-        HorzScrollBar.Page = 428
-        VertScrollBar.Page = 60
+        Width = 983
+        HorzScrollBar.Page = 1
+        VertScrollBar.Page = 1
         VertScrollBar.Tracking = True
         Align = alClient
-        ClientHeight = 239
-        ClientWidth = 625
         TabOrder = 0
-        object AddFilter_btn: TButton
-          Left = 8
-          Height = 25
-          Top = 8
-          Width = 122
-          AutoSize = True
-          Caption = 'Добавить фильтр'
-          OnClick = AddFilter_btnClick
-          TabOrder = 0
-        end
-        object DeleteAllFilters_btn: TButton
-          Left = 284
-          Height = 25
-          Top = 8
-          Width = 144
-          AutoSize = True
-          Caption = 'Удалить все фильтры'
-          OnClick = DeleteAllFilters_btnClick
-          TabOrder = 1
-        end
-        object AcceptFilters_spdbtn: TSpeedButton
-          Left = 136
-          Height = 25
-          Top = 8
-          Width = 142
-          AllowAllUp = True
-          Caption = 'Применить фильры'
-          Color = clSilver
-          Enabled = False
-          Font.Color = clBackground
-          Layout = blGlyphTop
-          Spacing = 0
-          OnClick = AcceptFilters_btnClick
-          ParentFont = False
-        end
-        object CreateNew_btn: TButton
-          AnchorSideTop.Control = ScrollBox
-          AnchorSideRight.Control = ScrollBox
-          AnchorSideRight.Side = asrBottom
-          Left = 492
-          Height = 25
-          Top = 5
-          Width = 128
-          Anchors = [akTop, akRight]
-          AutoSize = True
-          BorderSpacing.Top = 5
-          BorderSpacing.Right = 5
-          Caption = 'Добавить Элемент'
-          OnClick = CreateNew_btnClick
-          TabOrder = 2
-        end
-        object DeleteField_btn: TButton
-          AnchorSideTop.Control = CreateNew_btn
-          AnchorSideTop.Side = asrBottom
-          AnchorSideRight.Control = ScrollBox
-          AnchorSideRight.Side = asrBottom
-          Left = 492
-          Height = 25
-          Top = 35
-          Width = 128
-          Anchors = [akTop, akRight]
-          BorderSpacing.Top = 5
-          BorderSpacing.Right = 5
-          Caption = 'Удалить Элемент'
-          OnClick = DeleteField_btnClick
-          TabOrder = 3
-        end
       end
     end
   end

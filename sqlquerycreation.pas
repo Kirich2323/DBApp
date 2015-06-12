@@ -5,7 +5,7 @@ unit SQLQueryCreation;
 interface
 
 uses
-  Classes, SysUtils, MetaData, Dialogs, UMyPanel;
+  Classes, SysUtils, MetaData, Dialogs, UMyPanel, DataUnit;
 
 type
   SortField = record
@@ -13,48 +13,26 @@ type
     State, Index: integer;
   end;
 
-  Condition = record
-    Caption, Name: string;
-  end;
-
-const
-  LogicOperatorsArray: array [0..1] of string = ('И', 'Или');
-  LogicOperatorsArrayName: array [0..1] of string = ('And', 'Or');
-
 function MainSQLQueryCreate(Table: TTable): string;
 function SortSQLQueryCreate(SortArray: array of SortField): string;
 function FilterSQLQueryCreate(FilterArray: array of TMyPanel;
   FieldsArray: array of TField): string;
-function CreateUpdateSQL(TableName: string; Fields: array of string;
-  Values: array of string; IdField, CurrentId: string): string;
-function CreateInsertSQL(id, TableName: string; Values: array of string): string;
+function CreateUpdateSQL(Table: TTable; id: integer): string;
+function CreateInsertSQL(Table: TTable): string;
 function CreateDeleteSQL(TableName, IdField, id: string): string;
 
-var
-  Conditions: array of Condition;
-
 implementation
-
-procedure AddCondition(ConCap, ConName: string);
-begin
-  SetLength(Conditions, Length(Conditions) + 1);
-  with Conditions[High(Conditions)] do
-  begin
-    Caption := ConCap;
-    Name := ConName;
-  end;
-end;
 
 function MainSqlQueryCreate(Table: TTable): string;
 var
   i: integer;
-  CurTable: TTable;
+  //CurTable: TTable;
 begin
   Result := Format('Select %s.%s', [Table.Fields[0].Table, Table.Fields[0].Name]);
   for i := 1 to High(Table.Fields) do
     Result += Format(', %s.%s ', [Table.Fields[i].Table, Table.Fields[i].Name]);
   Result += Format(' From %s ', [Table.Name]);
-  if Length(CurTable.RefefenceFields) > 0 then
+  if Length(Table.RefefenceFields) > 0 then
     for i := 0 to high(Table.RefefenceFields) do
       Result += Format(' inner join %s on %s.%s = %s.%s',
         [Table.RefefenceFields[i].FromTable, Table.Name,
@@ -92,35 +70,47 @@ begin
       [FieldsArray[FilterArray[0].FieldNamesBox.ItemIndex].Name,
       Conditions[FilterArray[0].ConditionsBox.ItemIndex].Name, 0]);
     for i := 1 to High(FilterArray) do
-    begin
       Result += Format(' %s %s %s :param%d ',
         [LogicOperatorsArrayName[FilterArray[i].AndOrBox.ItemIndex],
         FieldsArray[FilterArray[i].FieldNamesBox.ItemIndex].Name,
         Conditions[FilterArray[i].ConditionsBox.ItemIndex].Name, i]);
+  end;
+end;
+
+function CreateUpdateSQL(Table: TTable; id: integer): string;
+var
+  i: integer;
+  VisibleFields: array of TField;
+begin
+  for i := 0 to High(Table.Fields) do
+    if Table.Fields[i].Visible then
+    begin
+      SetLength(VisibleFields, Length(VisibleFields) + 1);
+      VisibleFields[High(VisibleFields)] := Table.Fields[i];
+    end;
+  Result := Format('Update %s Set %s = :Param0', [Table.Name, Table.Fields[0].Name]);
+  for i := 0 to high(VisibleFields) do
+    if VisibleFields[i].InnerJoin then
+      Result += Format(', %s = :Param%d', [VisibleFields[i].NativeName, i + 1])
+    else
+      Result += Format(', %s = :Param%d', [VisibleFields[i].Name, i + 1]);
+  Result += Format(' Where %s = :Param0', [Table.Fields[0].Name]);
+end;
+
+function CreateInsertSQL(Table: TTable): string;
+var
+  i, k: integer;
+begin
+  k := 1;
+  Result := Format('Insert into %s VALUES(:Param0', [Table.Name]);
+  for i := 1 to High(Table.Fields) do
+  begin
+    if Table.Fields[i].Visible then
+    begin
+      Result += Format(', :Param%d', [k]);
+      Inc(k);
     end;
   end;
-end;
-
-function CreateUpdateSQL(TableName: string; Fields: array of string;
-  Values: array of string; IdField, CurrentId: string): string;
-var
-  i: integer;
-begin
-  Result := Format('Update %s Set %s = %s', [TableName, Fields[0], CurrentId]);
-  for i := 1 to high(Fields) do
-  begin
-    Result += Format(', %s = %s', [Fields[i], Values[i - 1]]);
-  end;
-  Result += Format(' Where %s = %s', [IdField, CurrentId]);
-end;
-
-function CreateInsertSQL(id, TableName: string; Values: array of string): string;
-var
-  i: integer;
-begin
-  Result := Format('Insert into %s VALUES(%s', [TableName, id]);
-  for i := 0 to High(Values) do
-    Result += Format(', %s', [Values[i]]);
   Result += ')';
 end;
 
@@ -129,11 +119,4 @@ begin
   Result := Format('Delete from %s Where %s = %s', [TableName, IdField, id]);
 end;
 
-initialization
-  AddCondition('Равно', '=');
-  AddCondition('Больше', '>');
-  AddCondition('Меньше', '<');
-  AddCondition('Содержит', 'CONTAINING');
-  AddCondition('Не содержит', 'NOT CONTAINING');
-  AddCondition('Начинается с', 'STARTING WITH');
 end.
