@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Grids,
   StdCtrls, PairSplitter, CheckLst, Menus, MetaData, sqldb, DB,
   SQLQueryCreation, UMyPanel, UEditCard, ListView, Windows, DataUnit,
-  fpspreadsheet;
+  fpspreadsheet, xlsbiff8;
 
 type
 
@@ -34,6 +34,8 @@ type
     Export: TMenuItem;
     HTML: TMenuItem;
     Ecxel: TMenuItem;
+    SaveDialog: TSaveDialog;
+    SaveHTMLDialog: TSaveDialog;
     ThisFile: TMenuItem;
     OrderBox: TComboBox;
     SortTxt: TLabel;
@@ -42,8 +44,8 @@ type
     HorizontalTxt: TLabel;
     VerticalTxt: TLabel;
     PairSplitter: TPairSplitter;
-    PairSplitterSide1: TPairSplitterSide;
-    PairSplitterSide2: TPairSplitterSide;
+    PairSplitterTop: TPairSplitterSide;
+    PairSplitterBottom: TPairSplitterSide;
     SchedulesDataSource: TDataSource;
     SchedulesSQLQuery: TSQLQuery;
     ScrollBox: TScrollBox;
@@ -86,6 +88,7 @@ type
     procedure SetWSpace();
     function ChekArea(X, Y, LeftBound, Right, TopBound, Bottom: integer): boolean;
     function CreateDragNDropUpdateSQL(Id, ToCol, ToRow: integer): string;
+    function CreateDragNDropUpdateSQLFamiliar(Id, ToCol: integer): string;
     procedure SetAxis(AxisBox: TCombobox; Values: TStringList; Ids: TStringList);
     procedure SortBoxChange(Sender: TObject);
     procedure Vertical_cboxChange(Sender: TObject);
@@ -164,8 +167,6 @@ begin
         SchedulesSQLQuery.ParamByName(Params[i]).AsInteger :=
           StrToInt(Filter.Filters[i].Edit.Text);
     end;
-    ShowMessage(Filter.Filters[i].Edit.Text);
-    ShowMessage(SchedulesSQLQuery.Params.ParamValues[Params[i]]);
   end;
 end;
 
@@ -179,6 +180,13 @@ begin
   Result := Format('Update %s Set %s = :Param0, %s = :Param1 where %s = :Param2',
     [Table.Name, VisibleFields[Vertical_cbox.ItemIndex].NativeName,
     VisibleFields[Horizontal_cbox.ItemIndex].NativeName, Table.Fields[0].Name]);
+end;
+
+function TSchedule.CreateDragNDropUpdateSQLFamiliar(Id, ToCol: integer): string;
+begin
+  Result := Format('Update %s Set %s = :Param0 where %s = :Param2',
+    [Table.Name, VisibleFields[Vertical_cbox.ItemIndex].NativeName,
+    Table.Fields[0].Name]);
 end;
 
 function TSchedule.ChekArea(X, Y, LeftBound, Right, TopBound, Bottom: integer): boolean;
@@ -195,8 +203,8 @@ begin
   SchedulesSQLQuery.SQL.Text :=
     Format('%s %s %s', [MainSQLQueryCreate(Table),
     FilterSQLQueryCreate(Filter.Filters, VisibleFields), SortSQLQueryCreate(SortArray)]);
-  SchedulesSQLQuery.close;
-  SchedulesSQLQuery.open;
+  SchedulesSQLQuery.Close;
+  SchedulesSQLQuery.Open;
 
   ClearCells();
   SetCells();
@@ -210,7 +218,8 @@ begin
   WSpace := 0;
   for i := 0 to VValues.Count - 1 do
     if Length(VValues.Strings[i]) > WSpace then
-      WSpace := Length(VValues.Strings[i]) * DrawGrid.Canvas.TextWidth('A') div 2;
+      WSpace := Length(VValues.Strings[i]);
+  WSpace *= DrawGrid.Canvas.TextWidth('A') div 2;
 end;
 
 procedure TSchedule.SetRowHeights();
@@ -301,7 +310,6 @@ end;
 
 procedure TSchedule.SetAxis(AxisBox: TComboBox; Values: TStringList; Ids: TStringList);
 begin
-  //SchedulesSQLQuery.Close;
   SchedulesSQLQuery.SQL.Text :=
     Format('Select * from %s', [VisibleFields[AxisBox.ItemIndex].Table]);
   SchedulesSQLQuery.Close;
@@ -316,7 +324,6 @@ begin
     Ids.Add(SchedulesSQLQuery.Fields.FieldByNumber(1).Value);
     SchedulesSQLQuery.Next;
   end;
-  //SchedulesSQLQuery.Close;
 end;
 
 procedure TSchedule.SortBoxChange(Sender: TObject);
@@ -409,6 +416,8 @@ begin
 end;
 
 procedure TSchedule.ShowListView(Arow, ACol: integer);
+var
+  i: integer;
 begin
   Application.CreateForm(TListForm, ListForm);
   ListForm.Table := Table;
@@ -423,6 +432,15 @@ begin
     Filters[0].Edit.Text := VValues.ValueFromIndex[ARow - 1];
     Filters[1].FieldNamesBox.Text := Horizontal_cbox.Items[Horizontal_cbox.ItemIndex];
     Filters[1].Edit.Text := HValues.ValueFromIndex[ACol - 1];
+    for i := 0 to High(Filter.Filters) do
+    begin
+      AddClick(AddNewBtn);
+      Filters[i + 2].FieldNamesBox.ItemIndex :=
+        Filter.Filters[i].FieldNamesBox.ItemIndex;
+      Filters[i + 2].ConditionsBox.ItemIndex :=
+        Filter.Filters[i].ConditionsBox.ItemIndex;
+      Filters[i + 2].Edit.Text := Filter.Filters[i].Edit.Text;
+    end;
     AcceptClick(AcceptBtn);
   end;
 end;
@@ -490,11 +508,6 @@ begin
   EnableApplyBtn();
 end;
 
-procedure TSchedule.HTMLClick(Sender: TObject);
-begin
-
-end;
-
 procedure TSchedule.OrderBoxChange(Sender: TObject);
 begin
   EnableApplyBtn();
@@ -533,7 +546,7 @@ begin
     begin
       DrawGrid.Canvas.TextOut(aRect.Left, aRect.Top, VValues.ValueFromIndex[ARow - 1]);
       if WSpace > 20 then
-        DrawGrid.ColWidths[0] := WSpace + 15
+        DrawGrid.ColWidths[0] := WSpace
       else
         DrawGrid.ColWidths[0] := 10;
     end;
@@ -624,8 +637,28 @@ procedure TSchedule.DrawGridMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: integer);
 var
   Col, Row: integer;
+  MyHint: string;
+  BottomBound: integer;
+  RightBound: integer;
+  i, j: integer;
 begin
   DrawGrid.MouseToCell(X, Y, Col, Row);
+  if (Col = 0) or (Row = 0) then
+    MyHint := ''
+  else
+  begin
+    MyHint := '';
+    RightBound := DrawGrid.CellRect(Col, Row).Right;
+    BottomBound := DrawGrid.CellRect(Col, Row).Bottom;
+    if ChekArea(X, Y, RightBound - 15, RightBound, BottomBound - 15, BottomBound) then
+      for i := 0 to High(Cells[Row - 1][Col - 1].Data) do
+      begin
+        for j := 0 to Cells[Row - 1][Col - 1].Data[i].Values.Count - 1 do
+          MyHint += Cells[Row - 1][Col - 1].Data[i].Values[j] + #10#13;
+        MyHint += #10#13;
+      end;
+    Drawgrid.Hint := MyHint;
+  end;
 end;
 
 procedure TSchedule.DrawGridMouseUp(Sender: TObject; Button: TMouseButton;
@@ -657,7 +690,10 @@ begin
         SchedulesSQLQuery.ParamByName(Params[0]).AsInteger := StrToInt(VIds[Row - 1]);
         SchedulesSQLQuery.ParamByName(Params[1]).AsInteger := StrToInt(HIds[Col - 1]);
         SchedulesSQLQuery.ParamByName(Params[2]).AsInteger := DragId;
-        SchedulesSQLQuery.SQL.Text := CreateDragNDropUpdateSQL(DragId, Col, Row);
+        if Horizontal_cbox.ItemIndex = Vertical_cbox.ItemIndex then
+          SchedulesSQLQuery.SQL.Text := CreateDragNDropUpdateSQLFamiliar(DragId, Col)
+        else
+          SchedulesSQLQuery.SQL.Text := CreateDragNDropUpdateSQL(DragId, Col, Row);
         SchedulesSQLQuery.ExecSQL;
         DataBaseConnectionUnit.SQLTransaction.Commit;
         ApplyClick(Apply);
@@ -701,38 +737,179 @@ begin
   end;
 end;
 
-procedure TSchedule.EcxelClick(Sender: TObject);
+procedure TSchedule.HTMLClick(Sender: TObject);
+var
+  Output: Text;
+  i, j, k, t: integer;
+  TempString: string;
 begin
+  if SaveHTMLDialog.Execute then
+  begin
+    AssignFile(output, SaveHTMLDialog.FileName + '.html');
+    rewrite(output);
+    writeln(output, '<!DOCTYPE HTML>');
+    writeln(output, ' <html>');
+    writeln(output, '  <head>');
+    writeln(output, '    <meta charset="utf-8">');
+    writeln(output, '     <title>Расписание</title>');
+    writeln(output, '  </head>');
+    writeln(output, '   <body>');
+    writeln(output, '    <table border="1">');
+    writeln(output, '     <caption>Расписание</caption>');
+    writeln(output, '      <tr><td> </td>');
+    for i := 0 to HValues.Count - 1 do
+      Writeln(output, Format('       <td BGCOLOR="LightGray">%s</td>', [HValues[i]]));
+    WriteLn(output, '      </tr>');
+    for i := 0 to High(Cells) do
+    begin
+      WriteLn(output, Format('      <tr><td BGCOLOR="LightGray">%s</td>',
+        [VValues[i]]));
+      for j := 0 to High(Cells[i]) do
+      begin
+        TempString := '';
+        for k := 0 to High(Cells[i][j].Data) do
+        begin
+          for t := 0 to Cells[i][j].Data[k].Values.Count - 1 do
+            TempString += Cells[i][j].Data[k].Values[t] + '<br>';
+          TempString += '<br>';
+        end;
+        WriteLn(output, Format('       <td NOWRAP VALIGN="TOP">%s</td>', [TempString]));
+      end;
+      writeln(output, '       </tr>');
+    end;
+    writeln(output, '    </table>');
+    writeln(output, '    <table border = "1">');
+    writeln(output, '     <caption> Фильтры </caption>');
+    for i := 0 to High(Filter.Filters) do
+      with Filter.Filters[i] do
+        writeln(output, Format('       <tr><td>%s</td><td>%s</td><td>%s</td></tr>',
+          [FieldNamesBox.Items[FieldNamesBox.ItemIndex],
+          ConditionsBox.Items[ConditionsBox.ItemIndex], Edit.Text]));
+    writeln(output, '     </table>');
+    writeln(output, '     <table border = "1">');
+    writeln(output, '      <caption> Поля </caption>');
+    writeln(output, '       <tr>');
+    for i := 0 to High(CheckedArray) do
+      if CheckedArray[i] then
+        Write(output, Format('<td>%s</td>', [VisibleFields[i].Caption]));
+    writeln(output, '     </tr>');
+    writeln(output, '    </table>');
+    writeln(output, '  </body>');
+    writeln(output, ' </html>');
+    CloseFile(output);
+  end;
+end;
 
+procedure TSchedule.EcxelClick(Sender: TObject);
+var
+  MyFile: TsWorkbook;
+  Sheet: TsWorksheet;
+  Cell: PCell;
+  Temp: ansistring;
+  SmallIndent: integer;
+  MaxIndent: integer;
+  LargeIndent: integer;
+  i, j, k, t: integer;
+begin
+  if SaveDialog.Execute then
+  begin
+    MyFile := TsWorkbook.Create();
+    MyFile.SetDefaultFont('Calibri', 9);
+    //MyFile.UsePalette(@PALETTE_BIFF8, Length(PALETTE_BIFF8));
+    MyFile.FormatSettings.CurrencyFormat := 2;
+    MyFile.FormatSettings.NegCurrFormat := 14;
+    MyFile.Options := MyFile.Options + [boCalcBeforeSaving];
+
+    Sheet := MyFile.AddWorksheet('Расписание');
+    Sheet.Options := Sheet.Options + [soHasFrozenPanes];
+    Sheet.LeftPaneWidth := 1;
+    Sheet.TopPaneHeight := 1;
+    //Sheet.Options := Sheet.Options - [soShowGridLines];
+    for i := 1 to HValues.Count do
+      Sheet.WriteColWidth(i, 52);
+    Sheet.WriteColWidth(0, Wspace div 6 + 1);
+
+    SmallIndent := 0;
+    MaxIndent := 0;
+    LargeIndent := 0;
+
+    for i := 0 to HValues.Count - 1 do
+      Sheet.WriteUTF8Text(0, i + 1, HValues[i]);
+
+    for i := 0 to High(Cells) do
+    begin
+      LargeIndent += MaxIndent;
+      MaxIndent := 0;
+      for j := 0 to High(Cells[i]) do
+      begin
+        SmallIndent := 0;
+        Sheet.WriteBorders(i + 1 + LargeIndent, j + 1, [cbEast, cbWest, cbNorth]);
+        for k := 0 to High(Cells[i][j].Data) do
+        begin
+          Temp := '';
+          for t := 0 to Cells[i][j].Data[k].Values.Count - 1 do
+            Temp += Cells[i][j].Data[k].Values[t] + #10;
+
+          Sheet.WriteWordwrap(i + 1 + SmallIndent + LargeIndent, j + 1, True);
+          Sheet.WriteUTF8Text(i + 1 + SmallIndent + LargeIndent, j + 1, Temp);
+          Sheet.WriteBorders(i + 2 + SmallIndent + LargeIndent, j + 1, [cbEast, cbWest]);
+          Inc(SmallIndent);
+        end;
+        Sheet.WriteBorders(i + 1 + SmallIndent + LargeIndent, j + 1,
+          [cbNorth]);
+        if MaxIndent < SmallIndent then
+          MaxIndent := SmallIndent - 1;
+      end;
+      Sheet.MergeCells(i + 1 + LargeIndent, 0, i + 1 + LargeIndent + MaxIndent, 0);
+      Sheet.WriteUTF8Text(i + 1 + LargeIndent, 0, VValues[i]);
+      Sheet.WriteVertAlignment(i + 1 + LargeIndent, 0, vaCenter);
+    end;
+
+    Sheet.WriteUTF8Text(0, HValues.Count + 2, 'Фильтры');
+    Sheet.MergeCells(0, HValues.Count + 2, 0, HValues.Count + 4);
+    Sheet.WriteHorAlignment(0, HValues.Count + 2, haCenter);
+
+    for i := 0 to High(Filter.Filters) do
+    begin
+      Temp := Format('%s %s %s', [Filter.Filters[i].FieldNamesBox.Text,
+        Filter.Filters[i].ConditionsBox.Text, Filter.Filters[i].Edit.Text]);
+      Sheet.WriteUTF8Text(i + 1, HValues.Count + 2, Temp);
+      Sheet.WriteVertAlignment(i + 1, HValues.Count + 1, vaCenter);
+      Sheet.MergeCells(i + 1, HValues.Count + 2, i + 1, HValues.Count + 4);
+    end;
+
+    Sheet.WriteUTF8Text(0, HValues.Count + 6, 'Поля');
+    Sheet.MergeCells(0, HValues.Count + 6, 0, HValues.Count + 8);
+    Sheet.WriteHorAlignment(0, HValues.Count + 6, haCenter);
+
+    for i := 0 to High(CheckedArray) do
+      if CheckedArray[i] then
+      begin
+        Sheet.WriteUTF8Text(i + 1, HValues.Count + 6, VisibleFields[i].Caption);
+        Sheet.WriteVertAlignment(i + 1, HValues.Count + 6, vaCenter);
+        Sheet.MergeCells(i + 1, HValues.Count + 6, i + 1, HValues.Count + 8);
+      end;
+    MyFile.WriteToFile(SaveDialog.FileName, sfExcel8, True);
+  end;
 end;
 
 procedure TSchedule.ApplyClick(Sender: TObject);
 var
   i, j, k: integer;
 begin
-  SchedulesSQLQuery.SQL.Text :=
-    MainSQLQueryCreate(Table) + ' ' + FilterSQLQueryCreate(Filter.Filters,
-    VisibleFields) + ' ' + SortSQLQueryCreate(SortArray);
-  //ShowMessage(SchedulesSQLQuery.SQL.Text);
-  SchedulesSQLQuery.Close;
-  SchedulesSQLQuery.Open;
+  SetAxis(Vertical_cbox, VValues, VIds);
+  SetAxis(Horizontal_cbox, HValues, HIds);
   ClearCells();
   SetCheckedArray();
   SetChekBoxes();
   SetSortArray();
   SetParams();
-
-  SetAxis(Vertical_cbox, VValues, VIds);
-  SetAxis(Horizontal_cbox, HValues, HIds);
-
-  SetWSpace();
-
   SchedulesSQLQuery.SQL.Text :=
     MainSQLQueryCreate(Table) + ' ' + FilterSQLQueryCreate(Filter.Filters,
     VisibleFields) + ' ' + SortSQLQueryCreate(SortArray);
-//  ShowMessage(SchedulesSQLQuery.SQL.Text);
   SchedulesSQLQuery.Close;
   SchedulesSQLQuery.Open;
+  SetWSpace();
   SetDrawColRowCount();
   SetCells();
   SetRowHeights();
@@ -791,9 +968,9 @@ procedure TSchedule.FormCreate(Sender: TObject);
 begin
   Table := TableArray[7];
   Filter := TMainFilter.Create(ScrollBox, Table.Fields, @ApplyFilters);
-  //Filter.AcceptBtn.Visible := False;
-  //Filter.DeleteBtn.left := Filter.AcceptBtn.Left;
-  //Filter.AcceptBtn := Apply;
+  Filter.AcceptBtn.Visible := False;
+  Filter.DeleteBtn.left := Filter.AcceptBtn.Left;
+  Filter.AcceptBtn := Apply;
 
   SetVisibleFields();
   SchedulesSQLQuery.SQL.Text :=

@@ -40,7 +40,6 @@ type
       Shift: TShiftState; X, Y: integer);
     procedure AcceptClick(Sender: TObject);
     procedure PanelItemChange(Sender: TObject);
-    function CompareFilters(Filter1, Filter2: TMyPanel): integer;
   end;
 
 implementation
@@ -102,44 +101,6 @@ begin
     Left := 290;
     OnClick := @DeleteAllFilters;
   end;
-end;
-
-function TMainFilter.CompareFilters(Filter1, Filter2: TMyPanel): integer;
-begin
-  if Filter1.AndOrBox.ItemIndex = Filter2.AndOrBox.ItemIndex then
-  begin
-    if Filter1.FieldNamesBox.Items.Count = Filter2.FieldNamesBox.Items.Count then
-    begin
-      if Filter1.FieldNamesBox.ItemIndex = Filter2.FieldNamesBox.ItemIndex then
-      begin
-        if Filter1.ConditionsBox.ItemIndex = Filter2.ConditionsBox.ItemIndex then
-        begin
-          if Filter1.Edit.Text = Filter2.Edit.Text then
-          begin
-            Result := 1;
-          end
-          else
-          begin
-            Result := -1;
-          end;
-        end
-        else
-        begin
-          Result := -1;
-        end;
-      end
-      else
-      begin
-        Result := -1;
-      end;
-    end
-    else
-    begin
-      Result := -1;
-    end;
-  end
-  else
-    Result := -1;
 end;
 
 procedure TMainfilter.AddClick(Sender: TObject);

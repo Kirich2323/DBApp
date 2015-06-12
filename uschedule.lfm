@@ -1,7 +1,7 @@
 object Schedule: TSchedule
-  Left = 557
+  Left = 487
   Height = 741
-  Top = 141
+  Top = 166
   Width = 1158
   Caption = 'Расписание'
   ClientHeight = 721
@@ -19,7 +19,7 @@ object Schedule: TSchedule
     Align = alClient
     Position = 600
     SplitterType = pstVertical
-    object PairSplitterSide1: TPairSplitterSide
+    object PairSplitterTop: TPairSplitterSide
       Cursor = crArrow
       Left = 0
       Height = 600
@@ -28,16 +28,15 @@ object Schedule: TSchedule
       ClientWidth = 1158
       ClientHeight = 600
       object DrawGrid: TDrawGrid
-        AnchorSideLeft.Control = PairSplitterSide1
+        AnchorSideLeft.Control = PairSplitterTop
         AnchorSideTop.Control = Vertical_cbox
         AnchorSideTop.Side = asrBottom
-        AnchorSideRight.Control = PairSplitterSide1
+        AnchorSideRight.Control = PairSplitterTop
         AnchorSideRight.Side = asrBottom
-        AnchorSideBottom.Control = PairSplitterSide1
+        AnchorSideBottom.Control = PairSplitterTop
         AnchorSideBottom.Side = asrBottom
         Left = 0
         Height = 474
-        Hint = 'ababa'
         Top = 126
         Width = 1158
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -45,7 +44,9 @@ object Schedule: TSchedule
         ExtendedSelect = False
         MouseWheelOption = mwGrid
         Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSizing, goColSizing, goColMoving, goThumbTracking, goSmoothScroll, goCellHints]
+        ParentShowHint = False
         RowCount = 6
+        ShowHint = True
         TabOrder = 0
         TitleImageList = ImageList
         OnDblClick = DrawGridDblClick
@@ -149,7 +150,7 @@ object Schedule: TSchedule
         Text = 'Возрастанию'
       end
     end
-    object PairSplitterSide2: TPairSplitterSide
+    object PairSplitterBottom: TPairSplitterSide
       Cursor = crArrow
       Left = 0
       Height = 116
@@ -366,5 +367,14 @@ object Schedule: TSchedule
         end
       end
     end
+  end
+  object SaveDialog: TSaveDialog
+    Filter = 'xls|.xls'
+    left = 591
+    top = 303
+  end
+  object SaveHTMLDialog: TSaveDialog
+    left = 408
+    top = 313
   end
 end
